@@ -273,7 +273,14 @@ main::before {
   max-width: 70%;
 }
 
-.visualizers .bar {
+.visualizer {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 16px;
+}
+
+.visualizer .bar {
   width: 3px;
   height: 4px;
   background-color: var(--accent);
@@ -281,7 +288,7 @@ main::before {
   transition: height 0.15s ease;
 }
 
-.visualizers .playing .bar {
+.visualizer.playing .bar {
   animation: equalizer 0.8s infinite alternate ease-in-out;
 }
 
@@ -346,9 +353,11 @@ main::before {
   padding-top: 0.25rem;
 }
 
-.volume-icon {
-  font-size: 0.75rem;
-  color: var(--text-muted);
+.volume-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--accent-dark);
 }
 
 .volume-slider {

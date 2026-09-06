@@ -33,6 +33,7 @@
             </p>
             <h1>Serafin Reysetyo Amantresno Grajo Pingol</h1>
           </div>
+
           <div class="hero-photo">
             <div class="photo-block"></div>
             <img
@@ -44,13 +45,13 @@
 
           <div class="audio-player">
             <div class="player-info">
-              <span class="track-title" id="track-id">Soundtrack Title</span>
-              <div class="visualizer" id="visualizer-id">
-                <div class="bar" id="bar1"></div>
-                <div class="bar" id="bar2"></div>
-                <div class="bar" id="bar3"></div>
-                <div class="bar" id="bar4"></div>
-                <div class="bar" id="bar5"></div>
+              <span class="track-title" id="track-title">Soundtrack Title</span>
+              <div class="visualizer" id="visualizer">
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
+                <div class="bar"></div>
               </div>
             </div>
 
@@ -75,7 +76,7 @@
             </div>
 
             <div class="volume-container">
-              <span class="volume-icon">&#128066;</span>
+              <span class="volume-label">VOL</span>
               <input
                 type="range"
                 class="volume-slider"
@@ -135,6 +136,7 @@
       </div>
     </footer>
     <div class="scroll-bar-bottom"></div>
+
     <script>
       const heroPhoto = document.querySelector(".hero-photo");
       if (heroPhoto) {
@@ -143,21 +145,21 @@
         });
       }
 
-      const playList = [
+      const playlist = [
         {
-          title: "Kings - Project Wingman by Jose Pavli",
+          title: "Kings - Jose Pavli",
           src: "/static/audio/Kings (Live Orchestra) (From Project Wingman).mp3",
         },
         {
-          title: "Peacekeeper II - Project Wingman by Jose Pavli",
+          title: "Peacekeeper II - Jose Pavli",
           src: "/static/audio/track2Peacekeeper II (Live Orchestra) (From Project Wingman).mp3",
         },
         {
-          title: "Showdown - Project Wingman by Jose Pavli",
+          title: "Showdown - Jose Pavli",
           src: "/static/audio/Showdown - Jose Pavli  Project Wingman Soundtrack (2020).mp3",
         },
         {
-          title: "Redline - Project Wingman FRONTLINE-59 by Jose Pavli",
+          title: "Redline - Jose Pavli",
           src: "/static/audio/Redline - Jose Pavli  Project Wingman-FRONTLINE 59 OST (2023).mp3",
         },
       ];
@@ -169,21 +171,28 @@
       const nextBtn = document.getElementById("next-btn");
       const trackTitle = document.getElementById("track-title");
       const visualizer = document.getElementById("visualizer");
+      const volumeSlider = document.getElementById("volume-slider");
 
       function loadTrack(index) {
-        audio.src = playList[index].src;
-        trackTitle.textContent = playList[index].title;
+        audio.src = playlist[index].src;
+        trackTitle.textContent = playlist[index].title;
       }
 
-      function playTrack() {
-        audio.play();
-        playBtn.textContent = "&#10074;&#10074;";
-        visualizer.classList.add("playing");
+      function playAudio() {
+        audio
+          .play()
+          .then(() => {
+            playBtn.innerHTML = "&#10074;&#10074;";
+            visualizer.classList.add("playing");
+          })
+          .catch((err) => {
+            console.error("Audio playback error:", err);
+          });
       }
 
       function pauseAudio() {
         audio.pause();
-        playBtn.textContent = "&#9654;";
+        playBtn.innerHTML = "&#9654;";
         visualizer.classList.remove("playing");
       }
 
@@ -212,16 +221,14 @@
         nextBtn.click();
       });
 
-      loadTrack(currentTrackIndex);
-
-      const volumeSlider = document.getElementById("volume-slider");
-
       if (audio && volumeSlider) {
         audio.volume = volumeSlider.value;
         volumeSlider.addEventListener("input", (e) => {
           audio.volume = e.target.value;
         });
       }
+
+      loadTrack(currentTrackIndex);
     </script>
   </body>
 </html>
