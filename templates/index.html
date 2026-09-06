@@ -85,5 +85,13 @@
       </div>
     </footer>
     <div class="scroll-bar-bottom"></div>
+    <script>
+      const heroPhoto = document.querySelector(".hero-photo");
+      if (heroPhoto) {
+        heroPhoto.addEventListener("click", () => {
+          heroPhoto.classList.toggle("revealed");
+        });
+      }
+    </script>
   </body>
 </html>
