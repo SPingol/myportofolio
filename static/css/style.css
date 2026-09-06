@@ -33,12 +33,12 @@ body ::before {
   background-color: var(--accent);
   z-index: -1;
 
-  background-image: url("/static/img/truth-nuke-chud.png");
+  background-image: url("/static/img/PW.jpg");
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
 
-  opacity: 0.05;
+  opacity: 0.02;
 }
 
 h1,
