@@ -199,6 +199,20 @@ h1,
   border-top: 1px solid var(--line);
 }
 
+.hero-photo {
+  grid-area: photo;
+  align-self: center;
+  position: relative;
+  width: 100%;
+  max-width: 220px;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--radius);
+}
+
+.hero-photo:hover .photo-block {
+  opacity: 0;
+}
 @media (max-width: 600px) {
   .hero-grid {
     grid-template-columns: 1fr;
@@ -208,20 +222,6 @@ h1,
       "details";
   }
 
-  .hero-photo {
-    grid-area: photo;
-    align-self: center;
-    position: relative;
-    width: 100%;
-    max-width: 220px;
-    aspect-ratio: 1 / 1;
-    overflow: hidden;
-    border-radius: var(--radius);
-  }
-
-  .hero-photo:hover .photo-block {
-    opacity: 0;
-  }
   .social-links {
     justify-content: flex-start;
   }
