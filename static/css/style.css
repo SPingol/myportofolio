@@ -14,20 +14,19 @@
   --radius: 4px;
 }
 
-.scroll-bar-top {
-  display: block;
-  width: 100%;
-  height: 4px;
-  background-color: var(--line);
-  z-index: 9999;
-}
-
+.scroll-bar-top,
 .scroll-bar-bottom {
   display: block;
   width: 100%;
-  height: 4px;
+  height: 6px;
   background-color: var(--line);
-  z-index: 9999;
+  position: relative;
+  z-index: 10;
+}
+
+main {
+  background-color: var(--paper);
+  position: relative;
 }
 
 body {
@@ -72,7 +71,10 @@ h1,
 }
 
 .site-header {
+  background-color: var(--paper);
   border-bottom: 1px solid var(--line);
+  position: relative;
+  z-index: 2;
 }
 
 .site-header .container {
@@ -210,10 +212,13 @@ h1,
 }
 
 .site-footer {
+  background-color: var(--paper);
   padding: 1.5rem;
   color: var(--text-muted);
   font-size: 0.85rem;
   border-top: 1px solid var(--line);
+  position: relative;
+  z-index: 2;
 }
 
 .hero-photo {
