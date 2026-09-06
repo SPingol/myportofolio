@@ -5,13 +5,29 @@
 }
 
 :root {
-  --ink: #1c1917;
-  --paper: #faf6f0;
-  --accent: #000cf1;
-  --accent-dark: #171990f3;
+  --ink: #ffffff;
+  --paper: #0b0d3c;
+  --accent: #000000;
+  --accent-dark: #000000;
   --line: #e3d9c9;
   --text-muted: #000000;
   --radius: 4px;
+}
+
+.scroll-bar-top {
+  display: block;
+  width: 100%;
+  height: 4px;
+  background-color: var(--line);
+  z-index: 9999;
+}
+
+.scroll-bar-bottom {
+  display: block;
+  width: 100%;
+  height: 4px;
+  background-color: var(--line);
+  z-index: 9999;
 }
 
 body {
@@ -30,9 +46,7 @@ body ::before {
   bottom: 2rem;
   left: 0;
   right: 0;
-  width: 100%;
-  height: 100%;
-  background-color: var(--accent);
+  background-color: #0b0d3c;
   z-index: -1;
 
   background-image: url("/static/img/PW.jpg");
@@ -40,7 +54,7 @@ body ::before {
   background-position: center;
   background-size: contain;
 
-  opacity: 0.05;
+  opacity: 0.03;
 }
 
 h1,
