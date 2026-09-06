@@ -165,12 +165,6 @@ h1,
   background-color: var(--accent);
 }
 
-.hero-photo {
-  grid-area: photo;
-  align-self: center;
-  position: relative;
-}
-
 .photo-block {
   position: absolute;
   top: 0;
@@ -181,21 +175,21 @@ h1,
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  opacity: 0.3;
-  z-index: 2;
+  opacity: 1;
+  z-index: 1;
+  transition: opacity 0.3s ease-in-out;
 }
 
 .avatar {
   position: relative;
-  z-index: 1;
+
   display: block;
   width: 100%;
   aspect-ratio: 1 / 1;
   object-fit: cover;
-  opacity: 1;
   border-radius: var(--radius);
   border: 3px solid var(--ink);
-  z-index: 1;
+  z-index: 0;
 }
 
 .site-footer {
@@ -215,9 +209,19 @@ h1,
   }
 
   .hero-photo {
+    grid-area: photo;
+    align-self: center;
+    position: relative;
+    width: 100%;
     max-width: 220px;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    border-radius: var(--radius);
   }
 
+  .hero-photo:hover .photo-block {
+    opacity: 0;
+  }
   .social-links {
     justify-content: flex-start;
   }
