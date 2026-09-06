@@ -46,13 +46,6 @@
           <div class="audio-player">
             <div class="player-info">
               <span class="track-title" id="track-title">Soundtrack Title</span>
-              <div class="visualizer" id="visualizer">
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-                <div class="bar"></div>
-              </div>
             </div>
 
             <div class="player-controls">
@@ -89,7 +82,11 @@
               />
             </div>
 
-            <audio id="audio-element"></audio>
+            <div class="visualizer-container">
+              <canvas id="visualizer-canvas" class="visualizer-canvas"></canvas>
+            </div>
+
+            <audio id="audio-element" crossorigin="anonymous"></audio>
           </div>
 
           <div class="hero-details">
@@ -170,8 +167,57 @@
       const prevBtn = document.getElementById("prev-btn");
       const nextBtn = document.getElementById("next-btn");
       const trackTitle = document.getElementById("track-title");
-      const visualizer = document.getElementById("visualizer");
       const volumeSlider = document.getElementById("volume-slider");
+      const canvas = document.getElementById("visualizer-canvas");
+      const canvasCtx = canvas.getContext("2d");
+
+      let audioCtx;
+      let analyser;
+      let source;
+      let animationId;
+
+      function initAudioContext() {
+        if (!audioCtx) {
+          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 64;
+
+          source = audioCtx.createMediaElementSource(audio);
+          source.connect(analyser);
+          analyser.connect(audioCtx.destination);
+        }
+      }
+
+      function resizeCanvas() {
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+      }
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+
+      function drawVisualizer() {
+        animationId = requestAnimationFrame(drawVisualizer);
+
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        analyser.getByteFrequencyData(dataArray);
+
+        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+
+        const barGap = 3;
+        const totalGaps = (bufferLength - 1) * barGap;
+        const barWidth = (canvas.width - totalGaps) / bufferLength;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+          const barHeight = (dataArray[i] / 255) * canvas.height;
+
+          canvasCtx.fillStyle = "#ff4500";
+          canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+
+          x += barWidth + barGap;
+        }
+      }
 
       function loadTrack(index) {
         audio.src = playlist[index].src;
@@ -179,21 +225,26 @@
       }
 
       function playAudio() {
+        initAudioContext();
+        if (audioCtx.state === "suspended") {
+          audioCtx.resume();
+        }
+
         audio
           .play()
           .then(() => {
             playBtn.innerHTML = "&#10074;&#10074;";
-            visualizer.classList.add("playing");
+            drawVisualizer();
           })
           .catch((err) => {
-            console.error("Audio playback error:", err);
+            console.error("Playback failed:", err);
           });
       }
 
       function pauseAudio() {
         audio.pause();
         playBtn.innerHTML = "&#9654;";
-        visualizer.classList.remove("playing");
+        cancelAnimationFrame(animationId);
       }
 
       playBtn.addEventListener("click", () => {
