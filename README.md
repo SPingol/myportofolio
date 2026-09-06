@@ -18,7 +18,7 @@ Class : PBP KKI
 
 - Total overhaul of the main webpage, with new colors and minor layout and component changes
 - Changed the introduction description again
-- NEW Audio Player added, with 4 different tracks with a audio visualizer
+- NEW Audio Player added, with 4 different tracks with a audio visualizer for funsies
 - NEW Hover Portrait mechanic, hover mouse cursor over portrait to reveal hidden image, for mobile simply click on the portrait to show and hide(also works on PC)
 - Mobile optimization and functionality
 - Checked and fixed the functionality of the Linkedin, Email and Github buttons
