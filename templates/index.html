@@ -154,7 +154,7 @@
         },
         {
           title: "Peacekeeper II - Jose Pavli",
-          src: "/static/audio/Peacekeeper II (Live Orchestra) (From Project Wingman).mp3",
+          src: "/static/audio/track2Peacekeeper II (Live Orchestra) (From Project Wingman).mp3",
         },
         {
           title: "Showdown - Jose Pavli",
@@ -183,7 +183,9 @@
 
       function initAudioContext() {
         if (!audioCtx) {
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+          const AudioContextClass =
+            window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AudioContextClass();
           analyser = audioCtx.createAnalyser();
           analyser.fftSize = 64;
 
@@ -194,31 +196,37 @@
       }
 
       function resizeCanvas() {
-        canvas.width = canvas.clientWidth;
-        canvas.height = canvas.clientHeight;
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+
+        canvasCtx.scale(dpr, dpr);
       }
+
       window.addEventListener("resize", resizeCanvas);
-      resizeCanvas();
 
       function drawVisualizer() {
         animationId = requestAnimationFrame(drawVisualizer);
 
+        const rect = canvas.getBoundingClientRect();
         const bufferLength = analyser.frequencyBinCount;
         const dataArray = new Uint8Array(bufferLength);
         analyser.getByteFrequencyData(dataArray);
 
-        canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+        canvasCtx.clearRect(0, 0, rect.width, rect.height);
 
         const barGap = 3;
         const totalGaps = (bufferLength - 1) * barGap;
-        const barWidth = (canvas.width - totalGaps) / bufferLength;
+        const barWidth = (rect.width - totalGaps) / bufferLength;
         let x = 0;
 
         for (let i = 0; i < bufferLength; i++) {
-          const barHeight = (dataArray[i] / 255) * canvas.height;
+          const barHeight = (dataArray[i] / 255) * rect.height;
 
           canvasCtx.fillStyle = "#ff4500";
-          canvasCtx.fillRect(x, canvas.height - barHeight, barWidth, barHeight);
+          canvasCtx.fillRect(x, rect.height - barHeight, barWidth, barHeight);
 
           x += barWidth + barGap;
         }
@@ -231,6 +239,7 @@
 
       function playAudio() {
         initAudioContext();
+
         if (audioCtx && audioCtx.state === "suspended") {
           audioCtx.resume();
         }
@@ -249,7 +258,9 @@
       function pauseAudio() {
         audio.pause();
         playBtn.innerHTML = "&#9654;";
-        cancelAnimationFrame(animationId);
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
       }
 
       playBtn.addEventListener("click", () => {
@@ -285,6 +296,7 @@
       }
 
       loadTrack(currentTrackIndex);
+      resizeCanvas();
     </script>
   </body>
 </html>
