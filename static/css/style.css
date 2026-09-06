@@ -173,14 +173,15 @@ h1,
 
 .photo-block {
   position: absolute;
-  top: 1.25rem;
-  left: 1.25rem;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
   background-image: url("/static/img/Federation.png");
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  z-index: 2;
 }
 
 .avatar {
@@ -193,6 +194,7 @@ h1,
   opacity: 0.7;
   border-radius: var(--radius);
   border: 3px solid var(--ink);
+  z-index: 1;
 }
 
 .site-footer {
