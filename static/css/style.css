@@ -373,9 +373,8 @@ main::before {
 @media (max-width: 768px) {
   .audio-player {
     margin-top: 1rem;
-    max-width: 260px;
-    margin-left: auto;
-    margin-right: auto;
+    width: 100%;
+    max-width: 100%;
   }
 }
 

@@ -86,7 +86,12 @@
               <canvas id="visualizer-canvas" class="visualizer-canvas"></canvas>
             </div>
 
-            <audio id="audio-element" crossorigin="anonymous"></audio>
+            <audio
+              id="audio-element"
+              crossorigin="anonymous"
+              playsinline
+              webkit-playsinline
+            ></audio>
           </div>
 
           <div class="hero-details">
@@ -226,7 +231,7 @@
 
       function playAudio() {
         initAudioContext();
-        if (audioCtx.state === "suspended") {
+        if (audioCtx && audioCtx.state === "suspended") {
           audioCtx.resume();
         }
 
