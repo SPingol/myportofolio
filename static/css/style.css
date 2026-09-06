@@ -14,6 +14,11 @@
   --radius: 4px;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 .scroll-bar-top,
 .scroll-bar-bottom {
   display: block;
@@ -36,20 +41,12 @@ body {
 body::before {
   content: "";
   position: fixed;
-  top: 2rem;
-  bottom: 2rem;
+  top: 0;
+  bottom: 0;
   left: 0;
   right: 0;
   background-color: var(--paper);
   z-index: -1;
-  background-image: url("/static/img/PW.jpg");
-  background-repeat: no-repeat;
-  background-position: center;
-  background-size: contain;
-  opacity: 0.2;
-  mix-blend-mode: screen;
-  will-change: transform;
-  transform: translateZ(0);
 }
 
 h1,
@@ -99,9 +96,9 @@ h1,
 }
 
 main {
-  background-color: var(--paper);
   position: relative;
   z-index: 1;
+  background-color: var(--paper);
   overflow: hidden;
 }
 
@@ -113,13 +110,16 @@ main::before {
   width: 100%;
   height: 100%;
   z-index: -1;
-
   background-image: url("/static/img/PW.jpg");
   background-repeat: no-repeat;
   background-position: center;
   background-size: cover;
-  opacity: 0.15;
+  opacity: 0.12;
   pointer-events: none;
+  box-sizing: border-box;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .hero {
@@ -139,6 +139,13 @@ main::before {
   grid-area: identity;
 }
 
+.hero-identity h1 {
+  font-size: clamp(3rem, 7vw, 5rem);
+  line-height: 0.95;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
 .hero-details {
   grid-area: details;
 }
@@ -150,11 +157,6 @@ main::before {
   color: var(--accent-dark);
   font-weight: 700;
   margin-bottom: 0.75rem;
-}
-
-.hero-identity h1 {
-  font-size: clamp(3rem, 7vw, 5rem);
-  line-height: 0.95;
 }
 
 .bio {
@@ -215,6 +217,7 @@ main::before {
   border-radius: var(--radius);
   border: 3px solid var(--line);
   align-self: start;
+  box-sizing: border-box;
 }
 
 .photo-block {
@@ -242,7 +245,12 @@ main::before {
   z-index: 0;
 }
 
-.hero-photo:hover .photo-block,
+@media (hover: hover) {
+  .hero-photo:hover .photo-block {
+    opacity: 0;
+  }
+}
+
 .hero-photo:active .photo-block {
   opacity: 0;
 }
@@ -257,19 +265,29 @@ main::before {
   z-index: 2;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 768px) {
   .hero-grid {
     grid-template-columns: 1fr;
     grid-template-areas:
       "identity"
       "photo"
       "details";
+    gap: 2rem;
+  }
+
+  .hero-identity h1 {
+    font-size: clamp(2.2rem, 8vw, 3.5rem);
   }
 
   .hero-photo {
     align-self: center;
-    max-width: 280px;
-    margin: 0 auto 1.5rem auto;
+    max-width: 260px;
+    margin: 0 auto;
+  }
+
+  .meta-list {
+    flex-wrap: wrap;
+    gap: 1rem 2rem;
   }
 
   .social-links {
