@@ -7,13 +7,13 @@
 
 /* CSS Custom Properties */
 :root {
-  --ink: #f2e8df; /* Main text/foreground color */
-  --paper: #0a0708; /* Dark background color */
-  --accent: #ff4500; /* Primary orange accent */
-  --accent-dark: #ff6b35; /* Secondary accent for kickers/subheadings */
-  --line: #d64000; /* Accent line borders */
-  --text-muted: #b89d8f; /* Secondary text color */
-  --radius: 4px; /* Standard border radius */
+  --ink: #f2e8df;
+  --paper: #0a0708;
+  --accent: #ff4500;
+  --accent-dark: #ff6b35;
+  --line: #d64000;
+  --text-muted: #b89d8f;
+  --radius: 4px;
 }
 
 /* Prevent font scaling issues on mobile */
@@ -42,10 +42,6 @@ body {
   position: relative;
   min-height: 100vh;
 }
-
-/* Dark Background Overlay pseudo-element */
-/*pseudo-elements target specific part of HTML element or add virtual content
-without extra HTML markup */
 
 body::before {
   content: "";
@@ -113,7 +109,6 @@ main {
   overflow: hidden;
 }
 
-/* Hardware-Accelerated Background Image with Faded Opacity */
 main::before {
   content: "";
   position: absolute;
@@ -129,7 +124,6 @@ main::before {
   opacity: 0.12;
   pointer-events: none;
   box-sizing: border-box;
-  /* Hardware acceleration to prevent lag during scroll */
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -149,12 +143,10 @@ main::before {
   gap: 1.5rem 3rem;
 }
 
-/* Hero Identity Header */
 .hero-identity {
   grid-area: identity;
 }
 
-/* Responsive Headline Font Sizing using fluid clamp() */
 .hero-identity h1 {
   font-size: clamp(3rem, 7vw, 5rem);
   line-height: 0.95;
@@ -181,7 +173,6 @@ main::before {
   margin-bottom: 1.5rem;
 }
 
-/* Metadata List (NPM / Academic Info) */
 .meta-list {
   display: flex;
   gap: 2rem;
@@ -200,7 +191,6 @@ main::before {
   font-weight: 600;
 }
 
-/* Social Media Link Buttons */
 .social-links {
   display: flex;
   gap: 0.5rem;
@@ -239,7 +229,6 @@ main::before {
   box-sizing: border-box;
 }
 
-/* Top Image hides/fades on hover or click */
 .photo-block {
   position: absolute;
   top: 0;
@@ -256,7 +245,6 @@ main::before {
   cursor: pointer;
 }
 
-/* Underlying Avatar Photo */
 .avatar {
   position: relative;
   display: block;
@@ -266,7 +254,6 @@ main::before {
   z-index: 0;
 }
 
-/* Reveal photo when hover is supported or when toggled via JS */
 @media (hover: hover) {
   .hero-photo:hover .photo-block {
     opacity: 0;
@@ -351,7 +338,6 @@ main::before {
   color: var(--accent-dark);
 }
 
-/* Custom Styled Range Slider */
 .volume-slider {
   -webkit-appearance: none;
   appearance: none;
@@ -363,7 +349,6 @@ main::before {
   cursor: pointer;
 }
 
-/* WebKit Slider Thumb (Chrome, Safari, Edge) */
 .volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -379,7 +364,6 @@ main::before {
   background: var(--accent);
 }
 
-/* Firefox Slider Thumb */
 .volume-slider::-moz-range-thumb {
   width: 10px;
   height: 10px;
@@ -394,7 +378,6 @@ main::before {
   background: var(--accent);
 }
 
-/* Audio Visualizer Canvas Container */
 .visualizer-container {
   width: 100%;
   height: 32px;
@@ -423,6 +406,25 @@ main::before {
   color: var(--ink);
   margin-bottom: 2rem;
   letter-spacing: -0.02em;
+}
+
+/* Sub-category titles for Organizations and Competitions */
+.category-title {
+  font-family:
+    "Space Grotesk",
+    -apple-system,
+    sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--accent-dark);
+  margin: 1.5rem 0 1rem;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+/* Top spacing for subsequent sub-sections */
+.section .category-title:not(:first-of-type) {
+  margin-top: 2.5rem;
 }
 
 .card-grid {
@@ -476,6 +478,17 @@ main::before {
   white-space: nowrap;
 }
 
+/* Small pill/tag to specify the card type (Organization vs Competition) */
+.type-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent-dark);
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
 .card-body {
   color: var(--text-muted);
   font-size: 0.9rem;
@@ -499,7 +512,6 @@ main::before {
 }
 
 @media (max-width: 768px) {
-  /* Convert grid to single-column layout for mobile */
   .hero-grid {
     grid-template-columns: 1fr;
     grid-template-areas:
