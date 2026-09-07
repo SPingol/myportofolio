@@ -1,24 +1,28 @@
+/* Universal Box Sizing & Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+/* CSS Custom Properties */
 :root {
-  --ink: #f2e8df;
-  --paper: #0a0708;
-  --accent: #ff4500;
-  --accent-dark: #ff6b35;
-  --line: #d64000;
-  --text-muted: #b89d8f;
-  --radius: 4px;
+  --ink: #f2e8df; /* Main text/foreground color */
+  --paper: #0a0708; /* Dark background color */
+  --accent: #ff4500; /* Primary orange accent */
+  --accent-dark: #ff6b35; /* Secondary accent for kickers/subheadings */
+  --line: #d64000; /* Accent line borders */
+  --text-muted: #b89d8f; /* Secondary text color */
+  --radius: 4px; /* Standard border radius */
 }
 
+/* Prevent font scaling issues on mobile */
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
 
+/* Top & Bottom Decorative Border Lines */
 .scroll-bar-top,
 .scroll-bar-bottom {
   display: block;
@@ -29,6 +33,7 @@ html {
   z-index: 10;
 }
 
+/* Base Body Styles */
 body {
   font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: var(--ink);
@@ -37,6 +42,10 @@ body {
   position: relative;
   min-height: 100vh;
 }
+
+/* Dark Background Overlay pseudo-element */
+/*pseudo-elements target specific part of HTML element or add virtual content
+without extra HTML markup */
 
 body::before {
   content: "";
@@ -49,6 +58,7 @@ body::before {
   z-index: -1;
 }
 
+/* Heading & Brand Typography */
 h1,
 .brand {
   font-family:
@@ -57,6 +67,7 @@ h1,
     sans-serif;
 }
 
+/* Global Content Container */
 .container {
   max-width: 960px;
   margin: 0 auto;
@@ -102,6 +113,7 @@ main {
   overflow: hidden;
 }
 
+/* Hardware-Accelerated Background Image with Faded Opacity */
 main::before {
   content: "";
   position: absolute;
@@ -117,6 +129,7 @@ main::before {
   opacity: 0.12;
   pointer-events: none;
   box-sizing: border-box;
+  /* Hardware acceleration to prevent lag during scroll */
   will-change: transform;
   transform: translateZ(0);
   backface-visibility: hidden;
@@ -126,6 +139,7 @@ main::before {
   padding: 4.5rem 0 5rem;
 }
 
+/* Two-column Hero Grid Layout */
 .hero-grid {
   display: grid;
   grid-template-columns: 1.3fr 1fr;
@@ -135,10 +149,12 @@ main::before {
   gap: 1.5rem 3rem;
 }
 
+/* Hero Identity Header */
 .hero-identity {
   grid-area: identity;
 }
 
+/* Responsive Headline Font Sizing using fluid clamp() */
 .hero-identity h1 {
   font-size: clamp(3rem, 7vw, 5rem);
   line-height: 0.95;
@@ -165,6 +181,7 @@ main::before {
   margin-bottom: 1.5rem;
 }
 
+/* Metadata List (NPM / Academic Info) */
 .meta-list {
   display: flex;
   gap: 2rem;
@@ -183,6 +200,7 @@ main::before {
   font-weight: 600;
 }
 
+/* Social Media Link Buttons */
 .social-links {
   display: flex;
   gap: 0.5rem;
@@ -221,6 +239,7 @@ main::before {
   box-sizing: border-box;
 }
 
+/* Top Image hides/fades on hover or click */
 .photo-block {
   position: absolute;
   top: 0;
@@ -237,6 +256,7 @@ main::before {
   cursor: pointer;
 }
 
+/* Underlying Avatar Photo */
 .avatar {
   position: relative;
   display: block;
@@ -244,6 +264,18 @@ main::before {
   height: 100%;
   object-fit: cover;
   z-index: 0;
+}
+
+/* Reveal photo when hover is supported or when toggled via JS */
+@media (hover: hover) {
+  .hero-photo:hover .photo-block {
+    opacity: 0;
+  }
+}
+
+.hero-photo.revealed .photo-block,
+.hero-photo:active .photo-block {
+  opacity: 0;
 }
 
 .audio-player {
@@ -319,6 +351,7 @@ main::before {
   color: var(--accent-dark);
 }
 
+/* Custom Styled Range Slider */
 .volume-slider {
   -webkit-appearance: none;
   appearance: none;
@@ -330,6 +363,7 @@ main::before {
   cursor: pointer;
 }
 
+/* WebKit Slider Thumb (Chrome, Safari, Edge) */
 .volume-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
@@ -345,6 +379,7 @@ main::before {
   background: var(--accent);
 }
 
+/* Firefox Slider Thumb */
 .volume-slider::-moz-range-thumb {
   width: 10px;
   height: 10px;
@@ -359,6 +394,7 @@ main::before {
   background: var(--accent);
 }
 
+/* Audio Visualizer Canvas Container */
 .visualizer-container {
   width: 100%;
   height: 32px;
@@ -452,17 +488,6 @@ main::before {
   margin-top: auto;
 }
 
-@media (hover: hover) {
-  .hero-photo:hover .photo-block {
-    opacity: 0;
-  }
-}
-
-.hero-photo.revealed .photo-block,
-.hero-photo:active .photo-block {
-  opacity: 0;
-}
-
 .site-footer {
   background-color: var(--paper);
   padding: 1.5rem;
@@ -474,6 +499,7 @@ main::before {
 }
 
 @media (max-width: 768px) {
+  /* Convert grid to single-column layout for mobile */
   .hero-grid {
     grid-template-columns: 1fr;
     grid-template-areas:

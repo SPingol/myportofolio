@@ -1,19 +1,27 @@
 <!doctype html>
 <html lang="en">
   <head>
+    <!-- Character encoding & responsive viewport settings -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Serafin - Portfolio</title>
+
+    <!-- Font preconnections & Google Fonts loading (Space Grotesk) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Local stylesheet -->
     <link rel="stylesheet" href="/static/css/style.css" />
   </head>
   <body>
+    <!-- Top decorative accent / progress bar -->
     <div class="scroll-bar-top"></div>
+
+    <!-- Main Navigation Header -->
     <header class="site-header">
       <div class="container">
         <a href="#profile" class="brand">Serafin</a>
@@ -23,9 +31,12 @@
       </div>
     </header>
 
+    <!-- Main Page Content -->
     <main>
+      <!-- Hero Section / Profile Overview -->
       <section class="hero" id="profile">
         <div class="container hero-grid">
+          <!-- Student Identity Header -->
           <div class="hero-identity">
             <p class="hero-kicker">
               Computer Science International Class &middot; Universitas
@@ -34,6 +45,7 @@
             <h1>Serafin Reysetyo Amantresno Grajo Pingol</h1>
           </div>
 
+          <!-- Profile Photo Frame -->
           <div class="hero-photo">
             <div class="photo-block"></div>
             <img
@@ -43,11 +55,14 @@
             />
           </div>
 
+          <!-- Interactive Web Audio Player & Visualizer -->
           <div class="audio-player">
+            <!-- Dynamic Track Title Display -->
             <div class="player-info">
               <span class="track-title" id="track-title">Soundtrack Title</span>
             </div>
 
+            <!-- Playback Control Buttons -->
             <div class="player-controls">
               <button
                 class="player-btn"
@@ -68,6 +83,7 @@
               </button>
             </div>
 
+            <!-- Volume Control Input -->
             <div class="volume-container">
               <span class="volume-label">VOL</span>
               <input
@@ -82,10 +98,12 @@
               />
             </div>
 
+            <!-- HTML5 Canvas for Real-time Frequency Spectrum Visualizer -->
             <div class="visualizer-container">
               <canvas id="visualizer-canvas" class="visualizer-canvas"></canvas>
             </div>
 
+            <!-- Hidden Audio Element for Web Audio API connection -->
             <audio
               id="audio-element"
               crossorigin="anonymous"
@@ -94,6 +112,7 @@
             ></audio>
           </div>
 
+          <!-- Bio and Metadata Section -->
           <div class="hero-details">
             <p class="bio">
               Hello, I'm Serafin, a computer science student at Universitas
@@ -103,6 +122,7 @@
               already apparent I am a fan of Project Wingman by Sector D2.
             </p>
 
+            <!-- Student ID and Academic Info -->
             <dl class="meta-list">
               <div class="meta-row">
                 <dt>NPM</dt>
@@ -113,6 +133,8 @@
                 <dd>S1 Ilmu Komputer KKI</dd>
               </div>
             </dl>
+
+            <!-- External Profile Links -->
             <div class="social-links">
               <a href="https://github.com/SPingol" class="social-link"
                 >GitHub</a
@@ -131,6 +153,7 @@
       </section>
     </main>
 
+    <!-- Footer Area -->
     <footer class="site-footer">
       <div class="container">
         <p>
@@ -140,7 +163,9 @@
     </footer>
     <div class="scroll-bar-bottom"></div>
 
+    <!-- Client-side Logic (Interactive Photo, Audio Player & Canvas Visualizer) -->
     <script>
+      // Toggle image reveal state when the photo container is clicked
       const heroPhoto = document.querySelector(".hero-photo");
       if (heroPhoto) {
         heroPhoto.addEventListener("click", () => {
@@ -148,6 +173,7 @@
         });
       }
 
+      // Audio Track List
       const playlist = [
         {
           title: "Kings - Jose Pavli",
@@ -167,6 +193,8 @@
         },
       ];
 
+      // Player State Variables & Document Object Model Elements(DOM)
+      // Links Javascript to visible parts of the webpage (DOM Elements)
       let currentTrackIndex = 0;
       const audio = document.getElementById("audio-element");
       const playBtn = document.getElementById("play-btn");
@@ -177,11 +205,13 @@
       const canvas = document.getElementById("visualizer-canvas");
       const canvasCtx = canvas.getContext("2d");
 
+      // Web Audio API
       let audioCtx;
       let analyser;
       let source;
       let animationId;
 
+      // Bypasses for browser autoplay restrictions
       function initAudioContext() {
         if (!audioCtx) {
           const AudioContextClass =
@@ -189,13 +219,16 @@
           audioCtx = new AudioContextClass();
           analyser = audioCtx.createAnalyser();
           analyser.fftSize = 64;
+          // FFT size, always in powers of 2, determines the level of detail of individual frequency bands
 
+          // Connect media element source through the frequency analyser to the output speakers
           source = audioCtx.createMediaElementSource(audio);
           source.connect(analyser);
           analyser.connect(audioCtx.destination);
         }
       }
 
+      // Scale canvas dimensions dynamically for consistent sharpness
       function resizeCanvas() {
         const dpr = window.devicePixelRatio || 1;
         const rect = canvas.getBoundingClientRect();
@@ -208,21 +241,27 @@
 
       window.addEventListener("resize", resizeCanvas);
 
+      // Render loop for the frequency spectrum audio visualizer
       function drawVisualizer() {
         animationId = requestAnimationFrame(drawVisualizer);
 
         const rect = canvas.getBoundingClientRect();
         const bufferLength = analyser.frequencyBinCount;
         const dataArray = new Uint8Array(bufferLength);
+
+        // Fetch current frequency spectrum data
         analyser.getByteFrequencyData(dataArray);
 
+        // Clear canvas frame before redraw
         canvasCtx.clearRect(0, 0, rect.width, rect.height);
 
+        // Calculate layout for spectrum bars
         const barGap = 3;
         const totalGaps = (bufferLength - 1) * barGap;
         const barWidth = (rect.width - totalGaps) / bufferLength;
         let x = 0;
 
+        // Draw individual bars based on frequency amplitude
         for (let i = 0; i < bufferLength; i++) {
           const barHeight = (dataArray[i] / 255) * rect.height;
 
@@ -233,11 +272,13 @@
         }
       }
 
+      // Load target track from array into audio source element
       function loadTrack(index) {
         audio.src = playlist[index].src;
         trackTitle.textContent = playlist[index].title;
       }
 
+      // Start audio playback & register canvas loop
       function playAudio() {
         initAudioContext();
 
@@ -256,6 +297,7 @@
           });
       }
 
+      // Pause audio playback & stop frame rendering
       function pauseAudio() {
         audio.pause();
         playBtn.innerHTML = "&#9654;";
@@ -264,6 +306,7 @@
         }
       }
 
+      // Play/Pause button toggle
       playBtn.addEventListener("click", () => {
         if (audio.paused) {
           playAudio();
@@ -272,6 +315,7 @@
         }
       });
 
+      // Play previous track
       prevBtn.addEventListener("click", () => {
         currentTrackIndex =
           (currentTrackIndex - 1 + playlist.length) % playlist.length;
@@ -279,16 +323,19 @@
         playAudio();
       });
 
+      // Play next track
       nextBtn.addEventListener("click", () => {
         currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
         loadTrack(currentTrackIndex);
         playAudio();
       });
 
+      // Auto-play next track
       audio.addEventListener("ended", () => {
         nextBtn.click();
       });
 
+      // Volume slider
       if (audio && volumeSlider) {
         audio.volume = volumeSlider.value;
         volumeSlider.addEventListener("input", (e) => {
@@ -296,6 +343,7 @@
         });
       }
 
+      // Initialize initial track state and size canvas
       loadTrack(currentTrackIndex);
       resizeCanvas();
     </script>
