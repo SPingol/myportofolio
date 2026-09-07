@@ -120,7 +120,7 @@ main::before {
   background-image: url("/static/img/PW.jpg");
   background-repeat: no-repeat;
   background-position: center;
-  background-size: contain;
+  background-size: cover;
   opacity: 0.12;
   pointer-events: none;
   box-sizing: border-box;
