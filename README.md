@@ -45,7 +45,9 @@ The greatest limitation is that whenever I want to change some content or descri
 
 ## AI DISCLOSURE
 
-For this assignment, AI was utilized strictly as a supplementary tool for minor and mechanical tasks, including code formatting, indentation, adding comments (limited primarily to section headers, while content was written or rewritten by myself), and debugging. I t Given my unfamiliarity with web development, I also utilized AI to clarify code concepts, explain syntax, and guide the implementation of specific features like audio and hover mechanics, and certain positioning of elements such as boxes. This served to supplement external resources such as YouTube tutorials, Stack Overflow, and W3Schools whenever standard guides could not be directly applied to my project. All core concepts, design choices, and structural logic remain my own work or originated from the tutorial template.
+For this assignment, AI was utilized strictly as a supplementary tool for minor and mechanical tasks, including code formatting, indentation, adding comments (limited primarily to section headers, while content was written or rewritten by myself), and debugging.Given my unfamiliarity with web development, I also utilized AI to clarify code concepts, explain syntax, and guide the implementation of specific features like audio and hover mechanics, and certain positioning of elements such as boxes. This served to supplement external resources such as YouTube tutorials, Stack Overflow, and W3Schools whenever standard guides could not be directly applied to my project.
+
+All core concepts, design choices, and structural logic remain my own work or originated from the tutorial template.
 
 While helpful, AI presented notable limitations. It could not fully grasp my specific vision for the design, requiring manual tweaks to adapt its suggestions. Additionally, it occasionally generated unsolicited text, descriptions, or extraneous elements that had to be manually removed or rewritten to match my intended design.
 
