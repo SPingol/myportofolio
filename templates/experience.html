@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Character encoding & responsive viewport settings -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Experience - {{ name }}</title>
+
+    <!-- Font preconnections & Google Fonts loading (Space Grotesk) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Local stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css" />
+  </head>
+  <body>
+    <!-- Top decorative accent / progress bar -->
+    <div class="scroll-bar-top"></div>
+
+    <!-- Main Navigation Header -->
+    <header class="site-header">
+      <div class="container">
+        <a href="{% url 'main:show_main' %}" class="brand">{{ name }}</a>
+        <nav>
+          <a href="{% url 'main:show_main' %}">Profile</a>
+          <a href="{% url 'main:show_experience' %}">Experience</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Main Page Content -->
+    <main>
+      <section class="experience-section" id="experience">
+        <div class="container">
+          <p class="section-kicker">My journey so far</p>
+          <h1>Experience</h1>
+          <div class="experience-grid">
+            {% for experience in experience_list %}
+            <article class="experience-card">
+              <span class="experience-category">
+                {{ experience.get_category_display }}
+              </span>
+              <h2>{{ experience.title }}</h2>
+              <p class="experience-description">{{ experience.description }}</p>
+              {% if experience.is_ongoing %}
+              <p class="experience-status">Ongoing</p>
+              {% else %}
+              <p class="experience-status">Completed</p>
+              {% endif %}
+            </article>
+            {% empty %}
+            <p class="empty-state">No experience has been added yet.</p>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer Area -->
+    <footer class="site-footer">
+      <div class="container">
+        <p>
+          &copy; 2026 {{ name }}. Fakultas Ilmu Komputer, Universitas Indonesia.
+        </p>
+      </div>
+    </footer>
+    <div class="scroll-bar-bottom"></div>
+
+    <!-- Client-side Logic (Interactive Photo, Audio Player & Canvas Visualizer) -->
+    <script>
+      // Toggle image reveal state when the photo container is clicked
+      const heroPhoto = document.querySelector(".hero-photo");
+      if (heroPhoto) {
+        heroPhoto.addEventListener("click", () => {
+          heroPhoto.classList.toggle("revealed");
+        });
+      }
+
+      // Audio Track List
+      const playlist = [
+        {
+          title: "Kings - Jose Pavli",
+          src: "/static/audio/Kings (Live Orchestra) (From Project Wingman).mp3",
+        },
+        {
+          title: "Peacekeeper II - Jose Pavli",
+          src: "/static/audio/Peacekeeper II (Live Orchestra) (From Project Wingman).mp3",
+        },
+        {
+          title: "Showdown - Jose Pavli",
+          src: "/static/audio/Showdown - Jose Pavli  Project Wingman Soundtrack (2020).mp3",
+        },
+        {
+          title: "Redline - Jose Pavli",
+          src: "/static/audio/Redline - Jose Pavli  Project Wingman-FRONTLINE 59 OST (2023).mp3",
+        },
+      ];
+
+      // Player State Variables & Document Object Model Elements(DOM)
+      // Links Javascript to visible parts of the webpage (DOM Elements)
+      let currentTrackIndex = 0;
+      const audio = document.getElementById("audio-element");
+      const playBtn = document.getElementById("play-btn");
+      const prevBtn = document.getElementById("prev-btn");
+      const nextBtn = document.getElementById("next-btn");
+      const trackTitle = document.getElementById("track-title");
+      const volumeSlider = document.getElementById("volume-slider");
+      const canvas = document.getElementById("visualizer-canvas");
+      const canvasCtx = canvas ? canvas.getContext("2d") : null;
+
+      // Web Audio API
+      let audioCtx;
+      let analyser;
+      let source;
+      let animationId;
+
+      // Bypasses for browser autoplay restrictions
+      function initAudioContext() {
+        if (!audioCtx && audio) {
+          const AudioContextClass =
+            window.AudioContext || window.webkitAudioContext;
+          audioCtx = new AudioContextClass();
+          analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 64;
+
+          source = audioCtx.createMediaElementSource(audio);
+          source.connect(analyser);
+          analyser.connect(audioCtx.destination);
+        }
+      }
+
+      // Scale canvas dimensions dynamically for consistent sharpness
+      function resizeCanvas() {
+        if (!canvas || !canvasCtx) return;
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+
+        canvasCtx.scale(dpr, dpr);
+      }
+
+      window.addEventListener("resize", resizeCanvas);
+
+      // Render loop for the frequency spectrum audio visualizer
+      function drawVisualizer() {
+        if (!canvas || !canvasCtx || !analyser) return;
+        animationId = requestAnimationFrame(drawVisualizer);
+
+        const rect = canvas.getBoundingClientRect();
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        analyser.getByteFrequencyData(dataArray);
+        canvasCtx.clearRect(0, 0, rect.width, rect.height);
+
+        const barGap = 3;
+        const totalGaps = (bufferLength - 1) * barGap;
+        const barWidth = (rect.width - totalGaps) / bufferLength;
+        let x = 0;
+
+        for (let i = 0; i < bufferLength; i++) {
+          const barHeight = (dataArray[i] / 255) * rect.height;
+
+          canvasCtx.fillStyle = "#ff4500";
+          canvasCtx.fillRect(x, rect.height - barHeight, barWidth, barHeight);
+
+          x += barWidth + barGap;
+        }
+      }
+
+      // Load target track from array into audio source element
+      function loadTrack(index) {
+        if (audio && trackTitle) {
+          audio.src = playlist[index].src;
+          trackTitle.textContent = playlist[index].title;
+        }
+      }
+
+      // Start audio playback & register canvas loop
+      function playAudio() {
+        initAudioContext();
+
+        if (audioCtx && audioCtx.state === "suspended") {
+          audioCtx.resume();
+        }
+
+        if (audio) {
+          audio
+            .play()
+            .then(() => {
+              if (playBtn) playBtn.innerHTML = "&#10074;&#10074;";
+              drawVisualizer();
+            })
+            .catch((err) => {
+              console.error("Playback failed:", err);
+            });
+        }
+      }
+
+      // Pause audio playback & stop frame rendering
+      function pauseAudio() {
+        if (audio) audio.pause();
+        if (playBtn) playBtn.innerHTML = "&#9654;";
+        if (animationId) {
+          cancelAnimationFrame(animationId);
+        }
+      }
+
+      // Play/Pause button toggle
+      if (playBtn) {
+        playBtn.addEventListener("click", () => {
+          if (audio && audio.paused) {
+            playAudio();
+          } else {
+            pauseAudio();
+          }
+        });
+      }
+
+      // Play previous track
+      if (prevBtn) {
+        prevBtn.addEventListener("click", () => {
+          currentTrackIndex =
+            (currentTrackIndex - 1 + playlist.length) % playlist.length;
+          loadTrack(currentTrackIndex);
+          playAudio();
+        });
+      }
+
+      // Play next track
+      if (nextBtn) {
+        nextBtn.addEventListener("click", () => {
+          currentTrackIndex = (currentTrackIndex + 1) % playlist.length;
+          loadTrack(currentTrackIndex);
+          playAudio();
+        });
+      }
+
+      // Auto-play next track
+      if (audio) {
+        audio.addEventListener("ended", () => {
+          if (nextBtn) nextBtn.click();
+        });
+      }
+
+      // Volume slider
+      if (audio && volumeSlider) {
+        audio.volume = volumeSlider.value;
+        volumeSlider.addEventListener("input", (e) => {
+          audio.volume = e.target.value;
+        });
+      }
+
+      // Initialize initial track state and size canvas
+      loadTrack(currentTrackIndex);
+      resizeCanvas();
+    </script>
+  </body>
+</html>

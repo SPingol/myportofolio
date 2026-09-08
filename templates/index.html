@@ -4,7 +4,7 @@
     <!-- Character encoding & responsive viewport settings -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Serafin - Portfolio</title>
+    <title>{{ name }} - Portfolio</title>
 
     <!-- Font preconnections & Google Fonts loading (Space Grotesk) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -24,12 +24,10 @@
     <!-- Main Navigation Header -->
     <header class="site-header">
       <div class="container">
-        <a href="#profile" class="brand">Serafin</a>
+        <a href="{% url 'main:show_main' %}" class="brand">{{ name }}</a>
         <nav>
-          <a href="#profile">Profile</a>
-          <a href="#education">Education</a>
-          <a href="#experience">Experience</a>
-          <a href="#competitions">Competitions</a>
+          <a href="{% url 'main:show_main' %}">Profile</a>
+          <a href="{% url 'main:show_experience' %}">Experience</a>
         </nav>
       </div>
     </header>
@@ -45,7 +43,7 @@
               Computer Science International Class &middot; Universitas
               Indonesia
             </p>
-            <h1>Serafin Reysetyo Amantresno Grajo Pingol</h1>
+            <h1>{{ name }}</h1>
           </div>
 
           <!-- Profile Photo Frame -->
@@ -54,7 +52,7 @@
             <img
               class="avatar"
               src="/static/img/UNPhoto.png"
-              alt="Photo of Serafin"
+              alt="Photo of {{ name }}"
             />
           </div>
 
@@ -117,23 +115,17 @@
 
           <!-- Bio and Metadata Section -->
           <div class="hero-details">
-            <p class="bio">
-              Hello, I'm Serafin, a computer science student at Universitas
-              Indonesia. I've been living abroad for 13 years and now the wind
-              has blown me here i.e I have no idea how I got here. Regardless,
-              I'm happy to be here and just seeing how things go. If it wasn't
-              already apparent I am a fan of Project Wingman by Sector D2.
-            </p>
+            <p class="bio">{{ bio }}</p>
 
             <!-- Student ID and Academic Info -->
             <dl class="meta-list">
               <div class="meta-row">
                 <dt>NPM</dt>
-                <dd>2506637136</dd>
+                <dd>{{ npm }}</dd>
               </div>
               <div class="meta-row">
                 <dt>Program</dt>
-                <dd>S1 Ilmu Komputer KKI</dd>
+                <dd>{{ study_program }}</dd>
               </div>
             </dl>
 
@@ -481,7 +473,7 @@
     <footer class="site-footer">
       <div class="container">
         <p>
-          &copy; 2026 Serafin. Fakultas Ilmu Komputer, Universitas Indonesia.
+          &copy; 2026 {{ name }}. Fakultas Ilmu Komputer, Universitas Indonesia.
         </p>
       </div>
     </footer>
