@@ -1,5 +1,4 @@
 import uuid
-
 from django.db import models
 
 
@@ -11,6 +10,8 @@ class Experience(models.Model):
         ("part-time", "Part-Time"),
         ("full-time", "Full-Time"),
         ("freelance", "Freelance"),
+        ("organization", "Organization"),
+        ("leadership", "Leadership"),
     ]
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -20,6 +21,12 @@ class Experience(models.Model):
         max_length=20,
         choices=EXPERIENCE_CHOICES,
         default="full-time",
+    )
+    skills = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        help_text="Comma-separated skills/tags",
     )
     thumbnail = models.URLField(blank=True, null=True)
     started_at = models.DateTimeField(auto_now_add=True)
@@ -31,3 +38,10 @@ class Experience(models.Model):
     @property
     def is_ongoing(self):
         return self.ended_at is None
+
+    @property
+    def skills_list(self):
+        """Splits comma-separated skills into an iterable list for templates."""
+        if not self.skills:
+            return []
+        return [skill.strip() for skill in self.skills.split(",")]
