@@ -11,24 +11,31 @@
         <!-- Card Header -->
         <div class="card-header">
           <div>
-            <h3>{{ education.title }}</h3>
+            <h3>{{ education.degree }}</h3>
+            <p class="card-subtitle">
+              {{ education.institution }} | {{ education.date_range }}
+            </p>
           </div>
         </div>
 
         <!-- Card Body -->
         <div class="card-body">
-          <p>{{ education.description }}</p>
+          <p><strong>{{ education.description_header }}</strong></p>
+          <ul>
+            {% for course in education.coursework_list %}
+            <li>{{ course }}</li>
+            {% endfor %}
+          </ul>
         </div>
 
-        <!-- Card Footer: Category Badge & Skill Tags -->
+        <!-- Card Footer: Location -->
         <div class="card-footer">
-          {% if education.category %}
-          <span class="tech-tag">{{ education.get_category_display }}</span>
-          {% endif %} {% for skill in education.skills_list %}
-          <span class="tech-tag">{{ skill }}</span>
-          {% endfor %}
+          {% if education.location %}
+          <span class="tech-tag">{{ education.location }}</span>
+          {% endif %}
         </div>
       </article>
+
       {% empty %}
       <p class="empty-state">No education has been added yet.</p>
       {% endfor %}
