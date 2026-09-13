@@ -29,6 +29,13 @@ Class : PBP KKI
 - Added commments to the index.html and style.css
 - NEW added Education and Experiences sections, aswell as related sub-sections
 
+13/09/26
+
+- NEW Added new MVT sections to replace static sections
+- Bug fixing for MVT sections
+- NEW base.html template, to be inherted by MVT sections to increase clarity when working, reducing clutter and reucing repetition
+- Compatibility changes to ensure certain features continue to work with the inheritance system
+
 ## REFLECTION QUESTIONS
 
 1. In Tutorial 1 and Individual Assignment 1, you were given the freedom to decide your portfolio website’s design. When you designed the HTML structure you used, did you use semantic HTML5 elements such as <section>, <article>, or <aside>? If so, how did those elements help you build the static web? If not, why did your design’s needs stay met without them?
