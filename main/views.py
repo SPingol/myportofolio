@@ -1,6 +1,5 @@
 from django.shortcuts import render
-
-from main.models import Experience
+from main.models import Experience, Education, Competition
 
 
 def show_main(request):
@@ -12,6 +11,8 @@ def show_main(request):
             "A Computer Science student at Universitas Indonesia interested "
             "in software development and education. Truth Nuke"
         ),
+        "education_list": Education.objects.all(),
+        "experience_list": Experience.objects.all(),
     }
     return render(request, "index.html", context)
 
@@ -22,3 +23,19 @@ def show_experience(request):
         "experience_list": Experience.objects.all(),
     }
     return render(request, "experience.html", context)
+
+
+def show_competition(request):
+    context = {
+        "name": "Serafin",
+        "competition_list": Competition.objects.all(),
+    }
+    return render(request, "competition.html", context)
+
+
+def show_education(request):
+    context = {
+        "name": "Serafin",
+        "education_list": Education.objects.all(),
+    }
+    return render(request, "education.html", context)

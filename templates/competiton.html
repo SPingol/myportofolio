@@ -1,82 +1,39 @@
-{% load static %}
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Competitions & Achievements - {{ name }}</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap"
-      rel="stylesheet"
-    />
-
-    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-  </head>
-  <body>
-    <div class="scroll-bar-top"></div>
-
-    <header class="site-header">
-      <div class="container">
-        <a href="{% url 'main:show_main' %}" class="brand">{{ name }}</a>
-        <nav>
-          <a href="{% url 'main:show_main' %}">Profile</a>
-          <a href="{% url 'main:show_experience' %}">Experience</a>
-          <a href="{% url 'main:show_competition' %}">Competitions</a>
-        </nav>
-      </div>
-    </header>
-
-    <main>
-      <section class="section" id="competitions">
-        <div class="container">
-          <h2 class="section-title">Competitions & Achievements</h2>
-
-          <div class="card-grid">
-            {% for competition in competition_list %}
-            <article class="card">
-              <!-- Card Header -->
-              <div class="card-header">
-                <div>
-                  <span class="award-badge">{{ competition.award }}</span>
-                  <h3>{{ competition.title }}</h3>
-                  <p class="card-subtitle">
-                    {{ competition.organizer }} {% if competition.location %} ·
-                    {{ competition.location }}{% endif %}
-                    <span class="date-tag">• {{ competition.date_str }}</span>
-                  </p>
-                </div>
-              </div>
-
-              <!-- Card Body -->
-              <div class="card-body">
-                <p>{{ competition.description|linebreaksbr }}</p>
-              </div>
-
-              <!-- Card Footer: Dynamic Tag Badges -->
-              <div class="card-footer">
-                {% for tag in competition.tags_list %}
-                <span class="tech-tag">{{ tag }}</span>
-                {% endfor %}
-              </div>
-            </article>
-            {% empty %}
-            <p class="empty-state">No competitions have been added yet.</p>
-            {% endfor %}
+{% extends 'base.html' %} {% block title %}Competitions & Achievements - {{ name
+}}{% endblock %} {% block content %}
+<!-- Competitions Section -->
+<section class="section" id="competitions">
+  <div class="container">
+    <h2 class="section-title">Competitions & Achievements</h2>
+    <div class="card-grid">
+      {% for competition in competition_list %}
+      <article class="card">
+        <!-- Card Header -->
+        <div class="card-header">
+          <div>
+            <span class="award-badge">{{ competition.award }}</span>
+            <h3>{{ competition.title }}</h3>
+            <p class="card-subtitle">
+              {{ competition.organizer }} {% if competition.location %} · {{
+              competition.location }}{% endif %}
+              <span class="date-tag">• {{ competition.date_str }}</span>
+            </p>
           </div>
         </div>
-      </section>
-    </main>
-
-    <footer class="site-footer">
-      <div class="container">
-        <p>
-          &copy; 2026 {{ name }}. Fakultas Ilmu Komputer, Universitas Indonesia.
-        </p>
-      </div>
-    </footer>
-    <div class="scroll-bar-bottom"></div>
-  </body>
-</html>
+        <!-- Card Body -->
+        <div class="card-body">
+          <p>{{ competition.description|linebreaksbr }}</p>
+        </div>
+        <!-- Card Footer: Dynamic Tag Badges -->
+        <div class="card-footer">
+          {% for tag in competition.tags_list %}
+          <span class="tech-tag">{{ tag }}</span>
+          {% endfor %}
+        </div>
+      </article>
+      {% empty %}
+      <p class="empty-state">No competitions have been added yet.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endblock %}

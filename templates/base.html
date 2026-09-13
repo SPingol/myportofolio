@@ -15,9 +15,10 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}" />
   </head>
   <body>
+    <!-- Top ornamental scroll bar -->
     <div class="scroll-bar-top"></div>
 
-    <!-- Navigation defined ONCE for all pages -->
+    <!-- Site Header / Navigation Menu -->
     <header class="site-header">
       <div class="container">
         <a href="{% url 'main:show_main' %}" class="brand">{{ name }}</a>
@@ -25,16 +26,15 @@
           <a href="{% url 'main:show_main' %}">Profile</a>
           <a href="{% url 'main:show_experience' %}">Experience</a>
           <a href="{% url 'main:show_competition' %}">Competitions</a>
+          <a href="{% url 'main:show_education' %}">Education</a>
         </nav>
       </div>
     </header>
 
-    <main>
-      {% block content %}
-      <!-- Specific page content goes here -->
-      {% endblock %}
-    </main>
+    <!-- Main Content Injection Window -->
+    <main>{% block content %}{% endblock %}</main>
 
+    <!-- Site Footer -->
     <footer class="site-footer">
       <div class="container">
         <p>
@@ -42,6 +42,8 @@
         </p>
       </div>
     </footer>
+
+    <!-- Bottom ornamental scroll bar -->
     <div class="scroll-bar-bottom"></div>
   </body>
 </html>
