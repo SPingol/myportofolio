@@ -8,8 +8,11 @@ def show_main(request):
         "npm": "2506637136",
         "study_program": "S1 Ilmu Komputer KKI",
         "bio": (
-            "A Computer Science student at Universitas Indonesia interested "
-            "in software development and education. Truth Nuke"
+            "Hello, I'm Serafin, a computer science student at Universitas Indonesia. "
+            "I've been living abroad for 13 years and now the wind has blown me here i.e "
+            "I have no idea how I got here. Regardless, "
+            "I'm happy to be here and just seeing how things go. "
+            "If it wasn't already apparent I am a fan of Project Wingman by Sector D2."
         ),
         "education_list": Education.objects.all(),
         "experience_list": Experience.objects.all(),
