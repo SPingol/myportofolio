@@ -5,7 +5,7 @@
     <!-- Character encoding & responsive viewport settings -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Experience - {{ name }}</title>
+    <title>Education - {{ name }}</title>
 
     <!-- Font preconnections & Google Fonts loading (Space Grotesk) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -28,45 +28,45 @@
         <a href="{% url 'main:show_main' %}" class="brand">{{ name }}</a>
         <nav>
           <a href="{% url 'main:show_main' %}">Profile</a>
-          <a href="{% url 'main:show_experience' %}">Experience</a>
+          <a href="{% url 'main:show_education' %}">education</a>
         </nav>
       </div>
     </header>
 
     <!-- Main Page Content -->
     <main>
-      <section class="section" id="experience">
+      <section class="section" id="education">
         <div class="container">
-          <h2 class="section-title">Experience</h2>
+          <h2 class="section-title">Education</h2>
 
           <div class="card-grid">
-            {% for experience in experience_list %}
+            {% for education in education_list %}
             <article class="card">
               <!-- Card Header -->
               <div class="card-header">
                 <div>
-                  <h3>{{ experience.title }}</h3>
+                  <h3>{{ education.title }}</h3>
                 </div>
               </div>
 
               <!-- Card Body -->
               <div class="card-body">
-                <p>{{ experience.description }}</p>
+                <p>{{ education.description }}</p>
               </div>
 
               <!-- Card Footer: Category Badge & Skill Tags -->
               <div class="card-footer">
-                {% if experience.category %}
+                {% if education.category %}
                 <span class="tech-tag"
-                  >{{ experience.get_category_display }}</span
+                  >{{ education.get_category_display }}</span
                 >
-                {% endif %} {% for skill in experience.skills_list %}
+                {% endif %} {% for skill in education.skills_list %}
                 <span class="tech-tag">{{ skill }}</span>
                 {% endfor %}
               </div>
             </article>
             {% empty %}
-            <p class="empty-state">No experience has been added yet.</p>
+            <p class="empty-state">No education has been added yet.</p>
             {% endfor %}
           </div>
         </div>
