@@ -91,42 +91,6 @@ Portfolio{% endblock %} {% block content %}
   </div>
 </section>
 
-<!-- Education Section (Dynamic Loop) -->
-<section class="section" id="education">
-  <div class="container">
-    <h2 class="section-title">Education</h2>
-    <div class="card-grid">
-      {% for edu in education_list %}
-      <article class="card">
-        <!-- Card Header -->
-        <div class="card-header">
-          <div>
-            <h3>{{ edu.degree }}</h3>
-            <p class="card-subtitle">{{ edu.institution }}</p>
-          </div>
-          <span class="card-tag">{{ edu.date_range }}</span>
-        </div>
-        <!-- Card Body -->
-        <div class="card-body">
-          <p><strong>{{ edu.description_header }}</strong></p>
-          <ul>
-            {% for course in edu.coursework_list %}
-            <li>{{ course }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-        <!-- Card Footer -->
-        <div class="card-footer">
-          <span class="card-location">{{ edu.location }}</span>
-        </div>
-      </article>
-      {% empty %}
-      <p class="empty-state">No education records found.</p>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
 <!-- Client-side Logic Script for Visualizer and Audio -->
 <script>
   const heroPhoto = document.querySelector(".hero-photo");
