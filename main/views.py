@@ -22,7 +22,7 @@ def show_main(request):
 
 def show_experience(request):
     context = {
-        "name": "Serafin",
+        "name": "Serafin Reysetyo Amantresno Grajo Pingol",
         "experience_list": Experience.objects.all(),
     }
     return render(request, "experience.html", context)
@@ -30,7 +30,7 @@ def show_experience(request):
 
 def show_competition(request):
     context = {
-        "name": "Serafin",
+        "name": "Serafin Reysetyo Amantresno Grajo Pingol",
         "competition_list": Competition.objects.all(),
     }
     return render(request, "competition.html", context)
@@ -38,7 +38,7 @@ def show_competition(request):
 
 def show_education(request):
     context = {
-        "name": "Serafin",
+        "name": "Serafin Reysetyo Amantresno Grajo Pingol",
         "education_list": Education.objects.all(),
     }
     return render(request, "education.html", context)
