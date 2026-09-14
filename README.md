@@ -36,6 +36,12 @@ Class : PBP KKI
 - NEW base.HTML template, to be inherted by MVT sections to increase clarity when working, reducing clutter and reucing repetition
 - Compatibility changes to ensure certain features continue to work with the inheritance system
 
+14/09/26
+
+- Added Unit Tests for all major components of the portofolio
+- Finalised the MVT sections of Education, Experience and Competition
+- Minor fixes and changes
+
 ## REFLECTION QUESTIONS
 
 ### Assignment 1
