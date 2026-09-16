@@ -107,11 +107,6 @@ class ExperienceForm(ModelForm):
                     "placeholder": "Python, Django, Leadership",
                 }
             ),
-            "thumbnail": URLInput(
-                attrs={
-                    
-                }
-            ),
             "ended_at": DateTimeInput(
                 attrs={
                     "type": "datetime-local",
