@@ -3,8 +3,8 @@ from django.contrib import messages
 from django.core import serializers
 from django.http import HttpResponse
 
-from main.models import Experience, Education, Competition
-from main.forms import EducationForm, ExperienceForm, CompetitionForm
+from main.models import Experience, Education, Competition, Project
+from main.forms import EducationForm, ExperienceForm, CompetitionForm, ProjectForm
 
 
 def show_main(request):
@@ -49,13 +49,22 @@ def show_education(request):
     return render(request, "education.html", context)
 
 
+def show_projects(request):
+    context = {
+        "name": "Serafin Reysetyo Amantresno Grajo Pingol",
+        "project_list": Project.objects.all(),
+    }
+    return render(request, "projects.html", context)
+
+
+# --- Form Handling Views ---
 
 def create_education(request):
     form = EducationForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
         form.save()
-        messages.success(request, "Pendidikan baru berhasil ditambahkan!")
+        messages.success(request, "New education entry added successfully!")
         return redirect("main:show_education")
 
     context = {
@@ -70,7 +79,7 @@ def create_experience(request):
 
     if request.method == "POST" and form.is_valid():
         form.save()
-        messages.success(request, "Pengalaman baru berhasil ditambahkan!")
+        messages.success(request, "New experience entry added successfully!")
         return redirect("main:show_experience")
 
     context = {
@@ -85,7 +94,7 @@ def create_competition(request):
 
     if request.method == "POST" and form.is_valid():
         form.save()
-        messages.success(request, "Kompetisi baru berhasil ditambahkan!")
+        messages.success(request, "New competition entry added successfully!")
         return redirect("main:show_competition")
 
     context = {
@@ -93,3 +102,18 @@ def create_competition(request):
         "form": form,
     }
     return render(request, "competition_form.html", context)
+
+
+def create_project(request):
+    form = ProjectForm(request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "New project added successfully!")
+        return redirect("main:show_projects")
+
+    context = {
+        "name": "Serafin Reysetyo Amantresno Grajo Pingol",
+        "form": form,
+    }
+    return render(request, "projects_form.html", context)

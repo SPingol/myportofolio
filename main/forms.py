@@ -1,5 +1,6 @@
 from django.forms import ModelForm, TextInput, Textarea, URLInput, DateTimeInput
-from main.models import Education, Experience, Competition
+from main.models import Education, Experience, Competition, Project
+
 
 class EducationForm(ModelForm):
     class Meta:
@@ -178,6 +179,56 @@ class CompetitionForm(ModelForm):
             "tags": TextInput(
                 attrs={
                     "placeholder": "Debate, Public Speaking, Academic",
+                }
+            ),
+        }
+
+
+class ProjectForm(ModelForm):
+    class Meta:
+        model = Project
+        fields = [
+            "title",
+            "description",
+            "tech_stack",
+            "project_url",
+            "project_image_url",
+        ]
+
+        labels = {
+            "title": "Project Title",
+            "description": "Project Description",
+            "tech_stack": "Technologies Used",
+            "project_url": "Project URL",
+            "project_image_url": "Project Image URL",
+        }
+
+        widgets = {
+            "title": TextInput(
+                attrs={
+                    "placeholder": "Portfolio Website",
+                    "maxlength": 255,
+                }
+            ),
+            "description": Textarea(
+                attrs={
+                    "placeholder": "Tell us about your project",
+                    "rows": 3,
+                }
+            ),
+            "tech_stack": TextInput(
+                attrs={
+                    "placeholder": "Django, Python, HTML, CSS",
+                }
+            ),
+            "project_url": URLInput(
+                attrs={
+                    "placeholder": "https://github.com/example/project",
+                }
+            ),
+            "project_image_url": URLInput(
+                attrs={
+                    "placeholder": "https://example.com/image.png",
                 }
             ),
         }
