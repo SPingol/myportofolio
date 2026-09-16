@@ -1,5 +1,5 @@
-from django.forms import ModelForm, TextInput, Textarea, URLInput, DateTimeInput
-from main.models import Education, Experience, Competition, Project
+from django.forms import DateTimeInput, ModelForm, Textarea, TextInput, URLInput
+from main.models import Competition, Education, Experience, Project
 
 
 class EducationForm(ModelForm):
@@ -76,7 +76,7 @@ class ExperienceForm(ModelForm):
         ]
 
         labels = {
-            "title": "Experience Title",
+            "title": "Experience / Organization Name",
             "role": "Role / Position",
             "description": "Description",
             "category": "Category",
@@ -196,7 +196,7 @@ class ProjectForm(ModelForm):
         ]
 
         labels = {
-            "title": "Project Title",
+            "title": "Project Name",
             "description": "Project Description",
             "tech_stack": "Technologies Used",
             "project_url": "Project URL",
@@ -223,12 +223,12 @@ class ProjectForm(ModelForm):
             ),
             "project_url": URLInput(
                 attrs={
-                    "placeholder": "https://github.com/example/project",
+                    "placeholder": "https://github.com/kakBurhan/burhanquestv4",
                 }
             ),
             "project_image_url": URLInput(
                 attrs={
-                    "placeholder": "https://example.com/image.png",
+                    "placeholder": "https://drive.google.com/thumbnail?id=...&sz=w1000",
                 }
             ),
         }
