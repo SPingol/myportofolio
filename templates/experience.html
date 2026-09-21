@@ -3,14 +3,29 @@
 <!-- Experience Section -->
 <section class="section" id="experience">
   <div class="container">
-    <h2 class="section-title">Experience</h2>
+
+    <!-- Header with Title and Add Button -->
+    <div class="project-header">
+      <h1 class="section-title" style="margin-bottom: 0;">Experience</h1>
+      <a href="{% url 'main:create_experience' %}" class="button project-add-button">
+        <span aria-hidden="true">+</span> Add Experience
+      </a>
+    </div>
+
+    <!-- Search Bar Form -->
+    <form method="get" action="{% url 'main:show_experiences' %}" class="project-search">
+      <input type="search" name="title" value="{{ title_query }}" placeholder="Search by title or role"
+        class="project-search__input" aria-label="Search by experience title" />
+      <button type="submit" class="button">Search</button>
+    </form>
+
     <div class="card-grid">
       {% for experience in experience_list %}
       <article class="card">
         <!-- Card Header -->
         <div class="card-header">
           <div>
-            <h3>{{ experience.title }}</h3>
+            <h2>{{ experience.title }}</h2>
             {% if experience.role %}
             <p class="card-subtitle">{{ experience.role }}</p>
             {% endif %}
@@ -30,7 +45,14 @@
         </div>
       </article>
       {% empty %}
+
+      <!-- Empty State to handle Searches -->
+      {% if title_query %}
+      <p class="empty-state">No experience found matching "{{ title_query }}".</p>
+      {% else %}
       <p class="empty-state">No experience has been added yet.</p>
+      {% endif %}
+
       {% endfor %}
     </div>
   </div>

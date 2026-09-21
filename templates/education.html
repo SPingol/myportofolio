@@ -3,7 +3,21 @@
 <!-- Education Section -->
 <section class="section" id="education">
   <div class="container">
-    <h2 class="section-title">Education</h2>
+
+    <!-- Header with Title and Add Button -->
+    <div class="project-header">
+      <h1 class="section-title" style="margin-bottom: 0;">Education</h1>
+      <a href="{% url 'main:create_education' %}" class="button project-add-button">
+        <span aria-hidden="true">+</span> Add Education
+      </a>
+    </div>
+
+    <!-- Search Bar Form -->
+    <form method="get" action="{% url 'main:show_education' %}" class="project-search">
+      <input type="search" name="title" value="{{ title_query }}" placeholder="Search by degree or institution"
+        class="project-search__input" aria-label="Search by degree or institution" />
+      <button type="submit" class="button">Search</button>
+    </form>
 
     <div class="card-grid">
       {% for education in education_list %}
@@ -37,7 +51,14 @@
       </article>
 
       {% empty %}
+
+      <!-- Empty State to handle Searches -->
+      {% if title_query %}
+      <p class="empty-state">No education found matching "{{ title_query }}".</p>
+      {% else %}
       <p class="empty-state">No education has been added yet.</p>
+      {% endif %}
+
       {% endfor %}
     </div>
   </div>

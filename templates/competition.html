@@ -1,9 +1,23 @@
-{% extends 'base.html' %} {% block title %}Competitions & Achievements - {{ name
-}}{% endblock %} {% block content %}
+{% extends 'base.html' %} {% block title %}Competitions & Achievements - {{ name }}{% endblock %} {% block content %}
 <!-- Competitions Section -->
 <section class="section" id="competitions">
   <div class="container">
-    <h2 class="section-title">Competitions & Achievements</h2>
+
+    <!-- Header with Title and Add Button -->
+    <div class="project-header">
+      <h1 class="section-title" style="margin-bottom: 0;">Competitions & Achievements</h1>
+      <a href="{% url 'main:create_competition' %}" class="button project-add-button">
+        <span aria-hidden="true">+</span> Add Competition
+      </a>
+    </div>
+
+    <!-- Search Bar Form -->
+    <form method="get" action="{% url 'main:show_competitions' %}" class="project-search">
+      <input type="search" name="title" value="{{ title_query }}" placeholder="Search by title or organizer"
+        class="project-search__input" aria-label="Search by competition title" />
+      <button type="submit" class="button">Search</button>
+    </form>
+
     <div class="card-grid">
       {% for competition in competition_list %}
       <article class="card">
@@ -31,7 +45,14 @@
         </div>
       </article>
       {% empty %}
+
+      <!-- Updated Empty State to handle Searches -->
+      {% if title_query %}
+      <p class="empty-state">No competitions found matching "{{ title_query }}".</p>
+      {% else %}
       <p class="empty-state">No competitions have been added yet.</p>
+      {% endif %}
+
       {% endfor %}
     </div>
   </div>
