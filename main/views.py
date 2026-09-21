@@ -76,6 +76,20 @@ def delete_project(request, project_id):
 
     return redirect("main:show_projects")
 
+def delete_experience(request, id):
+    experience = get_object_or_404(Experience, id=id)
+    if request.method == 'POST':
+        experience.delete()
+    return redirect('main:show_experience')
+
+def delete_education(request, id):
+    education = get_object_or_404(Education, id=id)
+    if request.method == 'POST':
+        education.delete()
+    return redirect('main:show_education')
+
+
+
 # --- Form Handling Views ---
 
 def create_education(request):

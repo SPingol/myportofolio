@@ -11,6 +11,8 @@ from main.views import (
     create_project,
     get_projects_json,
     delete_project
+    delete_experience
+    
 )
 
 app_name = 'main'

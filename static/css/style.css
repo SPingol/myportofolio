@@ -765,7 +765,10 @@ main::before {
   margin-top: 0;
 }
 
-.project-delete-modal {
+.project-delete-modal,
+.experience-delete-modal,
+.competition-delete-modal,
+.education-delete-modal {
   display: none;
   position: fixed;
   inset: 0;
@@ -782,11 +785,17 @@ main::before {
   justify-content: center;
 }
 
-.project-delete-modal:popover-open {
+.project-delete-modal:popover-open,
+.experience-delete-modal:popover-open,
+.competition-delete-modal:popover-open,
+.education-delete-modal:popover-open {
   display: flex;
 }
 
-.project-delete-modal__backdrop {
+.project-delete-modal__backdrop,
+.experience-delete-modal__backdrop,
+.competition-delete-modal__backdrop,
+.education-delete-modal__backdrop {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -797,7 +806,10 @@ main::before {
   cursor: default;
 }
 
-.project-delete-modal__content {
+.project-delete-modal__content,
+.experience-delete-modal__content,
+.competition-delete-modal__content,
+.education-delete-modal__content {
   position: relative;
   z-index: 1;
   width: min(100%, 480px);
@@ -808,14 +820,20 @@ main::before {
   box-shadow: 0 1rem 3rem rgba(28, 25, 23, 0.22);
 }
 
-.project-delete-modal__content h2 {
+.project-delete-modal__content h2,
+.experience-delete-modal__content h2,
+.competition-delete-modal__content h2,
+.education-delete-modal__content h2 {
   margin: 0 0 0.75rem;
   font-family: "Space Grotesk", -apple-system, sans-serif;
   font-size: 1.5rem;
-  color:#f2e8df
+  color: #f2e8df;
 }
 
-.project-delete-modal__close {
+.project-delete-modal__close,
+.experience-delete-modal__close,
+.competition-delete-modal__close,
+.education-delete-modal__close {
   position: absolute;
   top: 1rem;
   right: 1rem;
@@ -828,18 +846,22 @@ main::before {
   cursor: pointer;
 }
 
-.project-delete-modal__actions {
+.project-delete-modal__actions,
+.experience-delete-modal__actions,
+.competition-delete-modal__actions,
+.education-delete-modal__actions {
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
   margin-top: 1.5rem;
 }
 
-.project-delete-modal__content p {
+.project-delete-modal__content p,
+.experience-delete-modal__content p,
+.competition-delete-modal__content p,
+.education-delete-modal__content p {
   color: #f2e8df;
 }
-
-
 
 @media (max-width: 600px) {
   .project-header {
@@ -860,22 +882,34 @@ main::before {
     width: 100%;
   }
 
-  .project-delete-modal {
+  .project-delete-modal,
+  .experience-delete-modal,
+  .competition-delete-modal,
+  .education-delete-modal {
     align-items: flex-end;
     padding: 0;
   }
 
-  .project-delete-modal__content {
+  .project-delete-modal__content,
+  .experience-delete-modal__content,
+  .competition-delete-modal__content,
+  .education-delete-modal__content {
     width: 100%;
     padding: 1.25rem;
     border-radius: var(--radius) var(--radius) 0 0;
   }
 
-  .project-delete-modal__actions {
+  .project-delete-modal__actions,
+  .experience-delete-modal__actions,
+  .competition-delete-modal__actions,
+  .education-delete-modal__actions {
     flex-direction: column-reverse;
   }
 
-  .project-delete-modal__actions .button {
+  .project-delete-modal__actions .button,
+  .experience-delete-modal__actions .button,
+  .competition-delete-modal__actions .button,
+  .education-delete-modal__actions .button {
     width: 100%;
     text-align: center;
   }
