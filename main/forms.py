@@ -1,4 +1,4 @@
-from django.forms import DateTimeInput, ModelForm, Textarea, TextInput, URLInput
+from django.forms import DateInput, ModelForm, Textarea, TextInput, URLInput
 from main.models import Competition, Education, Experience, Project
 
 
@@ -72,7 +72,7 @@ class ExperienceForm(ModelForm):
             "description",
             "category",
             "skills",
-            "ended_at",
+            "duration",
         ]
 
         labels = {
@@ -81,7 +81,7 @@ class ExperienceForm(ModelForm):
             "description": "Description",
             "category": "Category",
             "skills": "Skills",
-            "ended_at": "End Date",
+            "duration": "Duration",
         }
 
         widgets = {
@@ -103,14 +103,21 @@ class ExperienceForm(ModelForm):
                     "rows": 4,
                 }
             ),
+            "category": TextInput(
+                attrs={
+                    "placeholder": "Work, Organization, Volunteer",
+                    "maxlength": 255,
+                }
+            ),
             "skills": TextInput(
                 attrs={
                     "placeholder": "Python, Django, Leadership",
                 }
             ),
-            "ended_at": DateTimeInput(
+            "duration": TextInput(
                 attrs={
-                    "type": "datetime-local",
+                    "placeholder": "Aug 2024 / Present",
+                    "maxlength": 100,
                 }
             ),
         }

@@ -47,6 +47,7 @@
           {% if education.location %}
           <span class="tech-tag">{{ education.location }}</span>
           {% endif %}
+          {% include "components/delete_modal.html" with item=education item_type="education" section_name="Education" item_title=education.degree delete_url="main:delete_education" %}
         </div>
       </article>
 

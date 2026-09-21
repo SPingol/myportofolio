@@ -1,7 +1,6 @@
 import uuid
 from django.db import models
 
-
 class Education(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     degree = models.CharField(max_length=255)                  # Ex: "Ilmu Komputer KKI"
@@ -23,26 +22,18 @@ class Education(models.Model):
 
 
 class Experience(models.Model):
-    EXPERIENCE_CHOICES = [
-        ("internship", "Internship"),
-        ("research", "Research"),
-        ("volunteer", "Volunteer"),
-        ("part-time", "Part-Time"),
-        ("full-time", "Full-Time"),
-        ("freelance", "Freelance"),
-        ("organization", "Organization"),
-        ("leadership", "Leadership"),
-    ]
-
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     title = models.CharField(max_length=255)
     role = models.CharField(max_length=255, blank=True, null=True) # Ex: "Internals Staff"
     description = models.TextField()
+    
     category = models.CharField(
-        max_length=20,
-        choices=EXPERIENCE_CHOICES,
-        default="full-time",
+        max_length=255,
+        blank=True,
+        null=True, 
+        help_text="Ex: Internship, Volunteer, Organization"
     )
+    
     skills = models.CharField(
         max_length=255,
         blank=True,
@@ -51,14 +42,24 @@ class Experience(models.Model):
     )
     thumbnail = models.URLField(blank=True, null=True)
     started_at = models.DateTimeField(auto_now_add=True)
-    ended_at = models.DateTimeField(blank=True, null=True)
+    
+    # 2. Renamed ended_at to duration to match your other models
+    duration = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        help_text="Display duration like '2023 – Present' or 'Jul 2023 – Aug 2024'",
+    )  
 
     def __str__(self):
         return self.title
 
     @property
     def is_ongoing(self):
-        return self.ended_at is None
+        """Checks if the experience is marked as ongoing/present."""
+        if not self.duration:
+            return True
+        return "present" in self.duration.lower()
 
     @property
     def skills_list(self):
@@ -99,6 +100,7 @@ class Competition(models.Model):
         if not self.tags:
             return []
         return [tag.strip() for tag in self.tags.split(",")]
+
 
 class Project(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)

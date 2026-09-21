@@ -13,7 +13,7 @@
     </div>
 
     <!-- Search Bar Form -->
-    <form method="get" action="{% url 'main:show_experiences' %}" class="project-search">
+    <form method="get" action="{% url 'main:show_experience' %}" class="project-search">
       <input type="search" name="title" value="{{ title_query }}" placeholder="Search by title or role"
         class="project-search__input" aria-label="Search by experience title" />
       <button type="submit" class="button">Search</button>
@@ -35,13 +35,14 @@
         <div class="card-body">
           <p>{{ experience.description }}</p>
         </div>
-        <!-- Card Footer: Category Badge & Skill Tags -->
+        <!-- Card Footer: Category Badge, Skill Tags & Delete Modal -->
         <div class="card-footer">
           {% if experience.category %}
-          <span class="tech-tag">{{ experience.get_category_display }}</span>
+          <span class="tech-tag">{{ experience.category }}</span>
           {% endif %} {% for skill in experience.skills_list %}
           <span class="tech-tag">{{ skill }}</span>
           {% endfor %}
+          {% include "components/delete_modal.html" with item=experience item_type="experience" section_name="Experience" item_title=experience.title delete_url="main:delete_experience" %}
         </div>
       </article>
       {% empty %}

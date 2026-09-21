@@ -34,7 +34,7 @@
 
 
             <!-- Included Delete Modal Component -->
-            {% include "components/project_delete_modal.html" with project=project %}
+            {% include "components/delete_modal.html" with item=project item_type="project" section_name="Project" item_title=project.title delete_url="main:delete_project" %}
           </div>
         </div>
       </article>

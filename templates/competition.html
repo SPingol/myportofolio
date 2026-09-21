@@ -12,7 +12,7 @@
     </div>
 
     <!-- Search Bar Form -->
-    <form method="get" action="{% url 'main:show_competitions' %}" class="project-search">
+    <form method="get" action="{% url 'main:show_competition' %}" class="project-search">
       <input type="search" name="title" value="{{ title_query }}" placeholder="Search by title or organizer"
         class="project-search__input" aria-label="Search by competition title" />
       <button type="submit" class="button">Search</button>
@@ -27,8 +27,8 @@
             <span class="award-badge">{{ competition.award }}</span>
             <h3>{{ competition.title }}</h3>
             <p class="card-subtitle">
-              {{ competition.organizer }} {% if competition.location %} · {{
-              competition.location }}{% endif %}
+              {{ competition.organizer }} {% if competition.location %} · {{competition.location }}
+              {% endif %}
               <span class="date-tag">• {{ competition.date_str }}</span>
             </p>
           </div>
@@ -42,6 +42,7 @@
           {% for tag in competition.tags_list %}
           <span class="tech-tag">{{ tag }}</span>
           {% endfor %}
+          {% include "components/delete_modal.html" with item=competition item_type="competition" section_name="Competition" item_title=competition.title delete_url="main:delete_competition" %}
         </div>
       </article>
       {% empty %}
