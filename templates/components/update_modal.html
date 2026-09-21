@@ -1,0 +1,33 @@
+<button popovertarget="update-modal-{{ object.id }}" class="button button-secondary">
+    Edit
+</button>
+
+<div id="update-modal-{{ object.id }}" popover class="modal-container">
+    <div class="modal-content">
+        <h2>Edit {{ title|default:"Item" }}</h2>
+
+        <form action="{% url update_url object.id %}" method="POST" enctype="multipart/form-data" class="project-form">
+            {% csrf_token %}
+
+            {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <span class="form-error">{{ field.errors.0 }}</span>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="modal-actions">
+                <button type="button" popovertarget="update-modal-{{ object.id }}" popovertargetaction="hide"
+                    class="button button-secondary">
+                    Cancel
+                </button>
+                <button type="submit" class="button">
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -37,12 +37,17 @@
         <div class="card-body">
           <p>{{ competition.description|linebreaksbr }}</p>
         </div>
-        <!-- Card Footer: Dynamic Tag Badges -->
+        <!-- Card Footer: Dynamic Tag Badges & Actions -->
         <div class="card-footer">
-          {% for tag in competition.tags_list %}
-          <span class="tech-tag">{{ tag }}</span>
-          {% endfor %}
-          {% include "components/delete_modal.html" with item=competition item_type="competition" section_name="Competition" item_title=competition.title delete_url="main:delete_competition" %}
+          <div class="card-tags">
+            {% for tag in competition.tags_list %}
+            <span class="tech-tag">{{ tag }}</span>
+            {% endfor %}
+          </div>
+          <div class="card-actions">
+            {% include "components/update_modal.html" with object=competition update_url="main:update_competition" title="Competition" form=competition.form %}
+            {% include "components/delete_modal.html" with item=competition item_type="competition" section_name="Competition" item_title=competition.title delete_url="main:delete_competition" %}
+          </div>
         </div>
       </article>
       {% empty %}

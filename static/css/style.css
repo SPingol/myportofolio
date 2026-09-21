@@ -477,14 +477,29 @@ main::before {
   flex-grow: 1;
 }
 
+/* Card Footer Layout & Alignment */
 .card-footer {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
   margin-top: auto;
   padding-top: 1rem;
   border-top: 1px solid rgba(214, 64, 0, 0.2);
+}
+
+.card-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: auto;
 }
 
 .card-footer .experience-status {
@@ -593,7 +608,6 @@ main::before {
   gap: 1rem;
 }
 
-/* Updated Experience Card contrast to match dark theme */
 .experience-card {
   padding: 1.25rem;
   background-color: var(--paper);
@@ -641,7 +655,6 @@ main::before {
   font-weight: 700;
 }
 
-/* Fixed Input Backgrounds, Dropdowns & Text Colors */
 .form-group input,
 .form-group textarea,
 .form-group select,
@@ -705,7 +718,6 @@ main::before {
   margin-bottom: 1.5rem;
 }
 
-/* Fixed Responsive Grid for Projects */
 .project-grid {
   display: grid;
   grid-template-columns: 1fr;
@@ -779,17 +791,18 @@ main::before {
   margin-top: 0;
 }
 
-/* Generic Root Delete Modal Component Styles (Fixes Native Popover Top-Layer Defaults) */
+/* Modal Window Overlay & Container */
 .modal-container[popover] {
-  margin: auto; /* Uses Top Layer alignment to center modal in viewport */
+  margin: auto; 
   padding: 0;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background-color: var(--paper);
   color: var(--ink);
   width: min(90%, 480px);
+  max-height: 85vh;
+  overflow-y: auto;
   box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.5);
-  overflow: hidden;
 }
 
 .modal-container[popover]::backdrop {

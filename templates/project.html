@@ -31,10 +31,12 @@
             {% if project.project_url %}
             <a href="{{ project.project_url }}" class="button">View Project</a>
             {% endif %}
-
-
-            <!-- Included Delete Modal Component -->
-            {% include "components/delete_modal.html" with item=project item_type="project" section_name="Project" item_title=project.title delete_url="main:delete_project" %}
+            <div class="card-actions">
+              {% include "components/update_modal.html" with object=project update_url="main:update_project"
+              title="Project" form=project.form %}
+              {% include "components/delete_modal.html" with item=project item_type="project" section_name="Project"
+              item_title=project.title delete_url="main:delete_project" %}
+            </div>
           </div>
         </div>
       </article>

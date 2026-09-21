@@ -35,14 +35,22 @@
         <div class="card-body">
           <p>{{ experience.description }}</p>
         </div>
-        <!-- Card Footer: Category Badge, Skill Tags & Delete Modal -->
+        <!-- Card Footer: Category Badge, Skill Tags & Actions -->
         <div class="card-footer">
-          {% if experience.category %}
-          <span class="tech-tag">{{ experience.category }}</span>
-          {% endif %} {% for skill in experience.skills_list %}
-          <span class="tech-tag">{{ skill }}</span>
-          {% endfor %}
-          {% include "components/delete_modal.html" with item=experience item_type="experience" section_name="Experience" item_title=experience.title delete_url="main:delete_experience" %}
+          <div class="card-tags">
+            {% if experience.category %}
+            <span class="tech-tag">{{ experience.category }}</span>
+            {% endif %}
+            {% for skill in experience.skills_list %}
+            <span class="tech-tag">{{ skill }}</span>
+            {% endfor %}
+          </div>
+          <div class="card-actions">
+            {% include "components/update_modal.html" with object=experience update_url="main:update_experience"
+            title="Experience" form=experience.form %}
+            {% include "components/delete_modal.html" with item=experience item_type="experience"
+            section_name="Experience" item_title=experience.title delete_url="main:delete_experience" %}
+          </div>
         </div>
       </article>
       {% empty %}

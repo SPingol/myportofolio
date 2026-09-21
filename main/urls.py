@@ -14,6 +14,10 @@ from main.views import (
     delete_experience,
     delete_education,
     delete_competition,
+    update_competition,
+    update_education,
+    update_experience,
+    update_project,
     )
 
 app_name = 'main'
@@ -33,4 +37,8 @@ urlpatterns = [
     path('experience/<uuid:experience_id>/delete/', delete_experience, name='delete_experience'),
     path('competition/<uuid:competition_id>/delete/', delete_competition, name='delete_competition'),
     path('education/<uuid:education_id>/delete/', delete_education, name='delete_education'),
+    path("experience/update/<uuid:experience_id>/", update_experience, name="update_experience"),
+    path("education/update/<uuid:education_id>/", update_education, name="update_education"),
+    path("competition/update/<uuid:competition_id>/", update_competition, name="update_competition"),
+    path("project/update/<uuid:project_id>/", update_project, name="update_project"),
 ]

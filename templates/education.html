@@ -42,12 +42,17 @@
           </ul>
         </div>
 
-        <!-- Card Footer: Location -->
+        <!-- Card Footer: Location & Actions -->
         <div class="card-footer">
-          {% if education.location %}
-          <span class="tech-tag">{{ education.location }}</span>
-          {% endif %}
-          {% include "components/delete_modal.html" with item=education item_type="education" section_name="Education" item_title=education.degree delete_url="main:delete_education" %}
+          <div class="card-tags">
+            {% if education.location %}
+            <span class="tech-tag">{{ education.location }}</span>
+            {% endif %}
+          </div>
+          <div class="card-actions">
+            {% include "components/update_modal.html" with object=education update_url="main:update_education" title="Education" form=education.form %}
+            {% include "components/delete_modal.html" with item=education item_type="education" section_name="Education" item_title=education.degree delete_url="main:delete_education" %}
+          </div>
         </div>
       </article>
 
