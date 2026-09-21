@@ -42,6 +42,11 @@ Class : PBP KKI
 - Finalised the MVT sections of Education, Experience and Competition
 - Minor fixes and changes
 
+20/09/26 & 21/09/26
+- NEW Added Forms for sections
+- NEW Added Update function for 
+- Refactored code to use base templates rather than several copies with minor changes 
+
 ## REFLECTION QUESTIONS
 
 ### Assignment 1
@@ -73,7 +78,20 @@ By having the data stored in a model, it makes it much simpler and easier to mak
 makemigrations generates Python based migration files that are essentially version control blueprints, similar to commits on github, for changes to the database. It does this by inspecting the models.py file and compares it with the existing migration history and packagaes any changes into a new migration file.
 
 migrate on the other hand takes those files and applies them to update the database schema. Executing the unapplied migration files to the configured database backend, running SQL queries to sync the database with the model definitions.
+### Assignment 3
 
+1. Explain why we use Django’s ModelForm instead of creating HTML forms manually. Additionally, explain why we are required to add "{% csrf_token %}" to these forms!
+
+The manual method is slow and tedious, as it requires each part of the form to be manually coded in and then manual extract validate and save the data in views. Whereas ModelForm does this automatically, directly connecting the database model with the web form. The CSRF token is a safety feature that blocks macilious Cross-Site Request Forgery attacks, by embedding a unique, secret token into each form submission that Django verifies against the user's session, ensuring that requests genuinely originate from your site and not from an unauthorized third-party website.
+
+
+2. In Tutorial 03, we discussed JSON and XML data formats. Why is JSON preferred in modern web application development compared to XML?
+
+Generally JSON is prefered because it is faster and much easier to work with compared to XML. JSON uses pair value structure rather than having to open and close tags in XML. Furthermore, JSON has a much simpler structure, mapping to native data structures such as dictionaries and because JSON is derived from JavaScript, browsers can parse it instantly, whereas XML needs a dedicated parser.
+
+3. Explain the flow that occurs when you use a view function to return your portfolio data in JSON format. Why do we need to perform the serialization process on Django models before returning the data?
+
+When a client requests portofolio data from a Django app, an HTTP request is sent to a specific URL route. The route maps the request to the corresponding view function, which sends queries to the database using Django ORM to fetch the necessary records. The view serializes them into a text compatible format, converting records into a JSON string. The view wraps the JSON data into an HTTP response and  sends it back to the client, where the frontend can natively parse and display the portfolio items.
 ## AI DISCLOSURE
 
 ### Assignment 1
@@ -91,3 +109,6 @@ For this assignment, similarly to the last one, AI was utilized strictly as a su
 AI additionally was used to help further understand the syntax needed to implement the MVT structure and preserve some of the unique features I had previously implemented. Though it has to be double checked and cross referenced with other examples, aswell as cautionary testing every other suggested change as it proved unreliable at times and produced odd results.
 
 Ultimately, AI is a useful supportive tool to help with the learning process especially for beginners facing new code that can feel overwhelming. However, it should not be used to completely do the work, as bypassing the process means learning nothing and developing no actual skills. It must remain a tool, not a replacement.
+
+### Assignment 
+For this assignment, AI was utilized much in the same way as assignment 1 & 2, though it is to be noted at this stage it is only useful and safe to use for small chunks and consultation as at this size and complexity it starts becoming confused and requires heavy manual changes to properly integrate the suggestions or solutions provided. 
