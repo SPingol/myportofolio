@@ -110,5 +110,5 @@ AI additionally was used to help further understand the syntax needed to impleme
 
 Ultimately, AI is a useful supportive tool to help with the learning process especially for beginners facing new code that can feel overwhelming. However, it should not be used to completely do the work, as bypassing the process means learning nothing and developing no actual skills. It must remain a tool, not a replacement.
 
-### Assignment 
+### Assignment 3
 For this assignment, AI was utilized much in the same way as assignment 1 & 2, though it is to be noted at this stage it is only useful and safe to use for small chunks and consultation as at this size and complexity it starts becoming confused and requires heavy manual changes to properly integrate the suggestions or solutions provided. 
