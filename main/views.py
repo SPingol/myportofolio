@@ -76,17 +76,23 @@ def delete_project(request, project_id):
 
     return redirect("main:show_projects")
 
-def delete_experience(request, id):
-    experience = get_object_or_404(Experience, id=id)
+def delete_experience(request, experience_id):
+    experience = get_object_or_404(Experience, pk=experience_id)
     if request.method == 'POST':
         experience.delete()
     return redirect('main:show_experience')
 
-def delete_education(request, id):
-    education = get_object_or_404(Education, id=id)
+def delete_education(request, education_id):
+    education = get_object_or_404(Education, pk=education_id)
     if request.method == 'POST':
         education.delete()
     return redirect('main:show_education')
+
+def delete_competition(request, competition_id):
+    competition = get_object_or_404(Competition, pk=competition_id)
+    if request.method == 'POST':
+        competition.delete()
+    return redirect('main:show_competitions')
 
 
 

@@ -10,10 +10,11 @@ from main.views import (
     show_projects,
     create_project,
     get_projects_json,
-    delete_project
-    delete_experience
-    
-)
+    delete_project,
+    delete_experience,
+    delete_education,
+    delete_competition,
+    )
 
 app_name = 'main'
 
@@ -28,5 +29,8 @@ urlpatterns = [
     path('projects/', show_projects, name='show_projects'),
     path('projects/add/', create_project, name='create_project'),
     path("api/projects/", get_projects_json, name="get_projects_json"),
-    path("projects/<uuid:project_id>/delete/", delete_project, name="delete_project")
+    path("projects/<uuid:project_id>/delete/", delete_project, name="delete_project"),
+    path('experience/<uuid:experience_id>/delete/', delete_experience, name='delete_experience'),
+    path('competition/<uuid:competition_id>/delete/', delete_competition, name='delete_competition'),
+    path('education/<uuid:education_id>/delete/', delete_education, name='delete_education'),
 ]
