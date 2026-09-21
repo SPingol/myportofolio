@@ -92,7 +92,7 @@ def delete_competition(request, competition_id):
     competition = get_object_or_404(Competition, pk=competition_id)
     if request.method == 'POST':
         competition.delete()
-    return redirect('main:show_competitions')
+    return redirect('main:show_competition')
 
 
 
