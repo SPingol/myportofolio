@@ -18,6 +18,10 @@ from main.views import (
     update_education,
     update_experience,
     update_project,
+    register,
+    login_user,
+    logout_user,
+    toggle_star,
     )
 
 app_name = 'main'
@@ -41,4 +45,8 @@ urlpatterns = [
     path("education/update/<uuid:education_id>/", update_education, name="update_education"),
     path("competition/update/<uuid:competition_id>/", update_competition, name="update_competition"),
     path("project/update/<uuid:project_id>/", update_project, name="update_project"),
+    path("register/", register, name="register"),
+    path("login/", login_user, name="login"),
+    path("logout/", logout_user, name="logout"),
+    path("projects/<uuid:project_id>/star/",toggle_star,name="toggle_star"),
 ]

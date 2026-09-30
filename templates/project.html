@@ -5,9 +5,11 @@
     <p class="section-kicker">Work that I've built</p>
     <div class="project-header">
       <h1>Projects</h1>
+     {% if user.is_superuser %}
       <a href="{% url 'main:create_project' %}" class="button project-add-button">
         <span aria-hidden="true">+</span> Add Project
       </a>
+      {% endif %}
     </div>
 
     <form method="get" action="{% url 'main:show_projects' %}" class="project-search">
@@ -32,8 +34,8 @@
             <a href="{{ project.project_url }}" class="button">View Project</a>
             {% endif %}
             <div class="card-actions">
-              {% include "components/update_modal.html" with object=project update_url="main:update_project"
-              title="Project" form=project.form %}
+              {% include "components/project_star.html" with project=project %}
+              {% include "components/update_modal.html" with object=project update_url="main:update_project" title="Project" form=project.form %}
               {% include "components/delete_modal.html" with item=project item_type="project" section_name="Project"
               item_title=project.title delete_url="main:delete_project" %}
             </div>

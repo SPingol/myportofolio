@@ -7,9 +7,11 @@
     <!-- Header with Title and Add Button -->
     <div class="project-header">
       <h1 class="section-title" style="margin-bottom: 0;">Experience</h1>
+    {% if user.is_superuser %}
       <a href="{% url 'main:create_experience' %}" class="button project-add-button">
         <span aria-hidden="true">+</span> Add Experience
       </a>
+    {% endif %}
     </div>
 
     <!-- Search Bar Form -->
@@ -46,10 +48,8 @@
             {% endfor %}
           </div>
           <div class="card-actions">
-            {% include "components/update_modal.html" with object=experience update_url="main:update_experience"
-            title="Experience" form=experience.form %}
-            {% include "components/delete_modal.html" with item=experience item_type="experience"
-            section_name="Experience" item_title=experience.title delete_url="main:delete_experience" %}
+            {% include "components/update_modal.html" with object=experience update_url="main:update_experience" title="Experience" form=experience.form %}
+            {% include "components/delete_modal.html" with item=experience item_type="experience" section_name="Experience" item_title=experience.title delete_url="main:delete_experience" %}
           </div>
         </div>
       </article>

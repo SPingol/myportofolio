@@ -1,19 +1,23 @@
+import datetime
 from django.contrib import messages
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required  
+from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.core import serializers
+from django.core.exceptions import PermissionDenied        
 from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.contrib.auth import login, logout
-from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
-from django.shortcuts import redirect, render
 
 from main.forms import CompetitionForm, EducationForm, ExperienceForm, ProjectForm
 from main.models import Competition, Education, Experience, Project
 
 
 def show_main(request):
+    last_login = request.COOKIES.get('last_login', 'No active login session / Cookie not found')
     context = {
         "name": "Serafin Reysetyo Amantresno Grajo Pingol",
+        "short_name": "Serafin",
         "npm": "2506637136",
         "study_program": "S1 Ilmu Komputer KKI",
         "bio": (
@@ -25,6 +29,7 @@ def show_main(request):
         ),
         "education_list": Education.objects.all(),
         "experience_list": Experience.objects.all(),
+        "last_login": last_login,
     }
     return render(request, "index.html", context)
 
@@ -42,7 +47,7 @@ def show_experience(request):
         item.form = ExperienceForm(instance=item)
 
     context = {
-        "name": "Serafin Reysetyo Amantresno Grajo Pingol",
+        "name": "Serafin",
         "experience_list": experience_list,
         "title_query": title_query,
     }
@@ -62,7 +67,7 @@ def show_competition(request):
         item.form = CompetitionForm(instance=item)
 
     context = {
-        "name": "Serafin Reysetyo Amantresno Grajo Pingol",
+        "name": "Serafin",
         "competition_list": competition_list,
         "title_query": title_query,
     }
@@ -82,7 +87,7 @@ def show_education(request):
         item.form = EducationForm(instance=item)
 
     context = {
-        "name": "Serafin Reysetyo Amantresno Grajo Pingol",
+        "name": "Serafin",
         "education_list": education_list,
         "title_query": title_query,
     }
@@ -103,14 +108,19 @@ def show_projects(request):
     title_query = request.GET.get("title", "").strip()
 
     context = {
-        "name": "Serafin Reysetyo Amantresno Grajo Pingol",
+        "name": "Serafin",
         "project_list": projects,
         "title_query": title_query,
     }
     return render(request, "project.html", context)
 
 
+
+@login_required(login_url="/login/")
 def delete_project(request, project_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     project = get_object_or_404(Project, pk=project_id)
 
     if request.method == "POST":
@@ -120,7 +130,11 @@ def delete_project(request, project_id):
     return redirect("main:show_projects")
 
 
+@login_required(login_url="/login/")
 def delete_experience(request, experience_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     experience = get_object_or_404(Experience, pk=experience_id)
     if request.method == "POST":
         experience.delete()
@@ -128,7 +142,11 @@ def delete_experience(request, experience_id):
     return redirect("main:show_experience")
 
 
+@login_required(login_url="/login/")
 def delete_education(request, education_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     education = get_object_or_404(Education, pk=education_id)
     if request.method == "POST":
         education.delete()
@@ -136,7 +154,11 @@ def delete_education(request, education_id):
     return redirect("main:show_education")
 
 
+@login_required(login_url="/login/")
 def delete_competition(request, competition_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     competition = get_object_or_404(Competition, pk=competition_id)
     if request.method == "POST":
         competition.delete()
@@ -144,7 +166,13 @@ def delete_competition(request, competition_id):
     return redirect("main:show_competition")
 
 
+# --- UPDATE VIEWS ---
+
+@login_required(login_url="/login/")
 def update_experience(request, experience_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     experience = get_object_or_404(Experience, pk=experience_id)
     if request.method == "POST":
         form = ExperienceForm(request.POST, instance=experience)
@@ -154,7 +182,11 @@ def update_experience(request, experience_id):
     return redirect("main:show_experience")
 
 
+@login_required(login_url="/login/")
 def update_education(request, education_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     education = get_object_or_404(Education, pk=education_id)
     if request.method == "POST":
         form = EducationForm(request.POST, instance=education)
@@ -164,7 +196,11 @@ def update_education(request, education_id):
     return redirect("main:show_education")
 
 
+@login_required(login_url="/login/")
 def update_competition(request, competition_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     competition = get_object_or_404(Competition, pk=competition_id)
     if request.method == "POST":
         form = CompetitionForm(request.POST, instance=competition)
@@ -174,7 +210,11 @@ def update_competition(request, competition_id):
     return redirect("main:show_competition")
 
 
+@login_required(login_url="/login/")
 def update_project(request, project_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     project = get_object_or_404(Project, pk=project_id)
     if request.method == "POST":
         form = ProjectForm(request.POST, instance=project)
@@ -184,7 +224,13 @@ def update_project(request, project_id):
     return redirect("main:show_projects")
 
 
+# --- CREATE VIEWS ---
+
+@login_required(login_url="/login/")
 def create_education(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     form = EducationForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -193,13 +239,17 @@ def create_education(request):
         return redirect("main:show_education")
 
     context = {
-        "name": "Serafin Reysetyo Amantresno Grajo Pingol",
+        "name": "Serafin",
         "form": form,
     }
     return render(request, "education_form.html", context)
 
 
+@login_required(login_url="/login/")
 def create_experience(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     form = ExperienceForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -208,13 +258,17 @@ def create_experience(request):
         return redirect("main:show_experience")
 
     context = {
-        "name": "Serafin Reysetyo Amantresno Grajo Pingol",
+        "name": "Serafin",
         "form": form,
     }
     return render(request, "experience_form.html", context)
 
 
+@login_required(login_url="/login/")
 def create_competition(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     form = CompetitionForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -223,13 +277,17 @@ def create_competition(request):
         return redirect("main:show_competition")
 
     context = {
-        "name": "Serafin Reysetyo Amantresno Grajo Pingol",
+        "name": "Serafin",
         "form": form,
     }
     return render(request, "competition_form.html", context)
 
 
+@login_required(login_url="/login/")
 def create_project(request):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
     form = ProjectForm(request.POST or None)
 
     if request.method == "POST" and form.is_valid():
@@ -238,10 +296,11 @@ def create_project(request):
         return redirect("main:show_projects")
 
     context = {
-        "name": "Serafin Reysetyo Amantresno Grajo Pingol",
+        "name": "Serafin",
         "form": form,
     }
     return render(request, "projects_form.html", context)
+
 
 
 def get_projects_json(request):
@@ -251,8 +310,20 @@ def get_projects_json(request):
     if title_query:
         projects = projects.filter(title__icontains=title_query)
 
-    projects_json = serializers.serialize("json", projects)
+    projects_json = serializers.serialize("json", projects, use_natural_foreign_keys=True)
     return HttpResponse(projects_json, content_type="application/json")
+
+@login_required(login_url="/login/")
+def toggle_star(request, project_id):
+    project = get_object_or_404(Project, pk=project_id)
+
+    if request.method == "POST":
+        if request.user in project.starred_by.all():
+            project.starred_by.remove(request.user)
+        else:
+            project.starred_by.add(request.user)
+
+    return redirect("main:show_projects")
 
 def register(request):
     form = UserCreationForm(request.POST or None)
@@ -263,7 +334,31 @@ def register(request):
         return redirect("main:login")
 
     context = {
-        "name": "Burhan",
+        "name": "Serafin",
         "form": form,
     }
     return render(request, "register.html", context)
+
+
+def login_user(request):
+    form = AuthenticationForm(request, data=request.POST or None)
+
+    if request.method == "POST" and form.is_valid():
+        user = form.get_user()
+        login(request, user)
+        response = redirect("main:show_main")
+        response.set_cookie('last_login', datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'))
+        return response
+
+    context = {
+        "name": "Serafin",
+        "form": form,
+    }
+    return render(request, "login.html", context)
+
+
+def logout_user(request):
+    logout(request)
+    response = redirect("main:show_main")
+    response.delete_cookie('last_login')
+    return response
