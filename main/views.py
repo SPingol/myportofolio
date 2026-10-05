@@ -284,3 +284,67 @@ def delete_competition(request, competition_id):
         competition.delete()
         messages.success(request, "Competition entry deleted successfully!")
     return redirect("main:show_competition")
+
+
+@login_required(login_url="/login/")
+def update_project(request, project_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
+    project = get_object_or_404(Project, pk=project_id)
+    form = ProjectForm(request.POST or None, instance=project)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Project updated successfully!")
+        return redirect("main:show_projects")
+
+    return render(request, "project_form.html", {"form": form})
+
+
+@login_required(login_url="/login/")
+def update_experience(request, experience_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
+    experience = get_object_or_404(Experience, pk=experience_id)
+    form = ExperienceForm(request.POST or None, instance=experience)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Experience updated successfully!")
+        return redirect("main:show_experience")
+
+    return render(request, "experience_form.html", {"form": form})
+
+
+@login_required(login_url="/login/")
+def update_education(request, education_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
+    education = get_object_or_404(Education, pk=education_id)
+    form = EducationForm(request.POST or None, instance=education)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Education updated successfully!")
+        return redirect("main:show_education")
+
+    return render(request, "education_form.html", {"form": form})
+
+
+@login_required(login_url="/login/")
+def update_competition(request, competition_id):
+    if not request.user.is_superuser:
+        raise PermissionDenied
+
+    competition = get_object_or_404(Competition, pk=competition_id)
+    form = CompetitionForm(request.POST or None, instance=competition)
+
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "Competition updated successfully!")
+        return redirect("main:show_competition")
+
+    return render(request, "competition_form.html", {"form": form})

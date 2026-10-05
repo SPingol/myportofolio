@@ -1,74 +1,236 @@
-{% extends 'base.html' %} {% block title %}Education - {{ name }}{% endblock %}
-{% block content %}
-<!-- Education Section -->
-<section class="section" id="education">
-  <div class="container">
+{% extends 'base.html' %}
+{% block title %}Education - {{ name }}{% endblock %}
 
-    <!-- Header with Title and Add Button -->
+{% block content %}
+<section class="experience-section" id="education">
+  <div class="container">
     <div class="project-header">
       <h1 class="section-title" style="margin-bottom: 0;">Education</h1>
-    {% if user.is_superuser %}
-      <a href="{% url 'main:create_education' %}" class="button project-add-button">
-        <span aria-hidden="true">+</span> Add Education
-      </a>
-    {% endif %}
+      {% if user.is_superuser %}
+      <button type="button" class="button project-add-button" popovertarget="add-education-modal">
+        <span aria-hidden="true">+</span>
+        Add Education
+      </button>
+      {% endif %}
     </div>
 
-    <!-- Search Bar Form -->
-    <form method="get" action="{% url 'main:show_education' %}" class="project-search">
-      <input type="search" name="title" value="{{ title_query }}" placeholder="Search by degree or institution"
+    <!-- Search Form -->
+    <form id="education-search-form" class="project-search">
+      <input type="search" id="search-input" name="q" placeholder="Search by degree or institution"
         class="project-search__input" aria-label="Search by degree or institution" />
       <button type="submit" class="button">Search</button>
     </form>
 
-    <div class="card-grid">
-      {% for education in education_list %}
-      <article class="card">
-        <!-- Card Header -->
-        <div class="card-header">
-          <div>
-            <h3>{{ education.degree }}</h3>
-            <p class="card-subtitle">
-              {{ education.institution }} | {{ education.date_range }}
-            </p>
-          </div>
-        </div>
+    <!-- Dynamic Container -->
+    <div id="grid" class="card-grid"></div>
 
-        <!-- Card Body -->
-        <div class="card-body">
-          <p><strong>{{ education.description_header }}</strong></p>
-          <ul>
-            {% for course in education.coursework_list %}
-            <li>{{ course }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-
-        <!-- Card Footer: Location & Actions -->
-        <div class="card-footer">
-          <div class="card-tags">
-            {% if education.location %}
-            <span class="tech-tag">{{ education.location }}</span>
-            {% endif %}
-          </div>
-          <div class="card-actions">
-            {% include "components/update_modal.html" with object=education update_url="main:update_education" title="Education" form=education.form %}
-            {% include "components/delete_modal.html" with item=education item_type="education" section_name="Education" item_title=education.degree delete_url="main:delete_education" %}
-          </div>
-        </div>
-      </article>
-
-      {% empty %}
-
-      <!-- Empty State to handle Searches -->
-      {% if title_query %}
-      <p class="empty-state">No education found matching "{{ title_query }}".</p>
-      {% else %}
-      <p class="empty-state">No education has been added yet.</p>
-      {% endif %}
-
-      {% endfor %}
-    </div>
   </div>
 </section>
+
+<!-- Modal for Adding Education -->
+{% if user.is_superuser %}
+<div id="add-education-modal" popover class="modal-backdrop">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Add New Education</h3>
+      <button type="button" onclick="closeEducationModal()" class="modal-close-btn">&times;</button>
+    </div>
+    <form id="education-form">
+      {% csrf_token %}
+      <div class="form-group">
+        <label>Degree *</label>
+        <input type="text" name="degree" required class="project-search__input" />
+      </div>
+      <div class="form-group">
+        <label>Institution</label>
+        <input type="text" name="institution" class="project-search__input" />
+      </div>
+      <div class="form-group">
+        <label>Date Range</label>
+        <input type="text" name="date_range" class="project-search__input" />
+      </div>
+      <div class="form-group">
+        <label>Location</label>
+        <input type="text" name="location" class="project-search__input" />
+      </div>
+      <div class="form-group">
+        <label>Description Header</label>
+        <input type="text" name="description_header" class="project-search__input" />
+      </div>
+      <div class="modal-footer">
+        <button type="button" onclick="closeEducationModal()" class="button button-secondary">Cancel</button>
+        <button type="submit" class="button">Save Education</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<script>
+  const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
+  const BASE_EDUCATION_ENDPOINT = "/api/education/";
+  const CREATE_EDUCATION_ENDPOINT = "/education/add-ajax/";
+
+  const searchInput = document.getElementById('search-input');
+  const searchForm = document.getElementById('education-search-form');
+  const gridContainer = document.getElementById('grid');
+  const educationForm = document.getElementById('education-form');
+
+  const SEARCH_DEBOUNCE_DELAY = 300;
+  let searchDebounceTimer;
+
+  function escapeHtml(value) {
+    return String(value ?? '')
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
+  }
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+  function closeEducationModal() {
+    const modal = document.getElementById("add-education-modal");
+    if (modal) modal.hidePopover();
+  }
+
+  function buildEducationCardElement(item) {
+    const fields = item.fields;
+    const pk = item.pk;
+    const articleElement = document.createElement('article');
+    articleElement.className = 'card';
+
+    const degree = escapeHtml(fields.degree);
+    const institution = escapeHtml(fields.institution);
+    const dateRange = escapeHtml(fields.date_range);
+    const location = escapeHtml(fields.location);
+    const descriptionHeader = escapeHtml(fields.description_header);
+    const courseworkList = fields.coursework_list || [];
+
+    const deleteHtml = IS_SUPERUSER
+      ? `<form action="/education/${pk}/delete/" method="POST" style="display:inline;" onsubmit="return confirm('Delete this education entry?')">
+          <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+          <button type="submit" class="button button-danger">Delete</button>
+        </form>`
+      : '';
+
+    articleElement.innerHTML = `
+      <div class="card-header">
+        <div>
+          <h3>${degree}</h3>
+          <p class="card-subtitle">${institution} | ${dateRange}</p>
+        </div>
+      </div>
+      <div class="card-body">
+        ${descriptionHeader ? `<p><strong>${descriptionHeader}</strong></p>` : ''}
+        ${courseworkList.length ? `
+          <ul>
+            ${courseworkList.map(course => `<li>${escapeHtml(course)}</li>`).join('')}
+          </ul>
+        ` : ''}
+      </div>
+      <div class="card-footer">
+        <div class="card-tags">
+          ${location ? `<span class="tech-tag">${location}</span>` : ''}
+        </div>
+        <div class="card-actions">
+          <form action="/education/${pk}/star/" method="POST" style="display:inline;">
+            <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
+            <button type="submit" class="button button-small">
+              <span style="color: ${fields.is_starred ? '#f59e0b' : '#9ca3af'};">★</span> ${fields.star_count || 0}
+            </button>
+          </form>
+          ${deleteHtml}
+        </div>
+      </div>
+    `;
+    return articleElement;
+  }
+
+  async function fetchEducation(searchQuery = '') {
+    gridContainer.innerHTML = `<p class="empty-state">Loading education history...</p>`;
+
+    try {
+      const url = searchQuery ? `${BASE_EDUCATION_ENDPOINT}?q=${encodeURIComponent(searchQuery)}` : BASE_EDUCATION_ENDPOINT;
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+      const data = await response.json();
+
+      if (!data || data.length === 0) {
+        gridContainer.innerHTML = `<p class="empty-state">No education entries found.</p>`;
+        return;
+      }
+
+      gridContainer.innerHTML = '';
+      data.forEach(item => gridContainer.appendChild(buildEducationCardElement(item)));
+    } catch (error) {
+      gridContainer.innerHTML = `<p class="form-error">Failed to load education entries.</p>`;
+    }
+  }
+
+  function searchEducation() {
+    fetchEducation(searchInput.value.trim());
+  }
+
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(searchEducation, SEARCH_DEBOUNCE_DELAY);
+  });
+
+  searchForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    clearTimeout(searchDebounceTimer);
+    searchEducation();
+  });
+
+  async function addEducation(event) {
+    event.preventDefault();
+    const submitBtn = educationForm.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+
+    try {
+      const response = await fetch(CREATE_EDUCATION_ENDPOINT, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') },
+        body: new FormData(educationForm),
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.status === 201) {
+        educationForm.reset();
+        closeEducationModal();
+        if (typeof showToast === 'function') showToast("Education added successfully!", false);
+        fetchEducation(searchInput.value.trim());
+      } else {
+        const errorMsg = data.message || 'Validation error saving education.';
+        if (typeof showToast === 'function') showToast(errorMsg, true);
+      }
+    } catch (err) {
+      if (typeof showToast === 'function') showToast("Network error while saving.", true);
+    } finally {
+      submitBtn.disabled = false;
+    }
+  }
+
+  if (educationForm) {
+    educationForm.addEventListener('submit', addEducation);
+  }
+
+  fetchEducation(searchInput.value.trim());
+</script>
 {% endblock %}
