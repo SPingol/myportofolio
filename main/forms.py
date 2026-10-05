@@ -27,43 +27,31 @@ class EducationForm(ModelForm):
         }
 
         widgets = {
-            "degree": TextInput(
-                attrs={
-                    "placeholder": "Computer Science",
-                    "maxlength": 255,
-                }
-            ),
-            "institution": TextInput(
-                attrs={
-                    "placeholder": "University of Indonesia",
-                    "maxlength": 255,
-                }
-            ),
-            "date_range": TextInput(
-                attrs={
-                    "placeholder": "2025 – Present",
-                    "maxlength": 100,
-                }
-            ),
-            "description_header": TextInput(
-                attrs={
-                    "placeholder": "Coursework:",
-                    "maxlength": 255,
-                }
-            ),
-            "coursework": Textarea(
-                attrs={
-                    "placeholder": "Data Structures\nAlgorithms\nObject-Oriented Programming",
-                    "rows": 4,
-                }
-            ),
-            "location": TextInput(
-                attrs={
-                    "placeholder": "Depok, Indonesia",
-                    "maxlength": 255,
-                }
-            ),
+            "degree": TextInput(attrs={"placeholder": "Computer Science", "maxlength": 255}),
+            "institution": TextInput(attrs={"placeholder": "University of Indonesia", "maxlength": 255}),
+            "date_range": TextInput(attrs={"placeholder": "2025 – Present", "maxlength": 100}),
+            "description_header": TextInput(attrs={"placeholder": "Coursework:", "maxlength": 255}),
+            "coursework": Textarea(attrs={"placeholder": "Data Structures\nAlgorithms\nObject-Oriented Programming", "rows": 4}),
+            "location": TextInput(attrs={"placeholder": "Depok, Indonesia", "maxlength": 255}),
         }
+
+    def clean_degree(self):
+        return strip_tags(self.cleaned_data.get("degree", "")).strip()
+
+    def clean_institution(self):
+        return strip_tags(self.cleaned_data.get("institution", "")).strip()
+        
+    def clean_date_range(self):
+        return strip_tags(self.cleaned_data.get("date_range", "")).strip()
+        
+    def clean_description_header(self):
+        return strip_tags(self.cleaned_data.get("description_header", "")).strip()
+
+    def clean_coursework(self):
+        return strip_tags(self.cleaned_data.get("coursework", "")).strip()
+
+    def clean_location(self):
+        return strip_tags(self.cleaned_data.get("location", "")).strip()
 
 
 class ExperienceForm(ModelForm):
@@ -88,42 +76,34 @@ class ExperienceForm(ModelForm):
         }
 
         widgets = {
-            "title": TextInput(
-                attrs={
-                    "placeholder": "Company or Organization Name",
-                    "maxlength": 255,
-                }
-            ),
-            "role": TextInput(
-                attrs={
-                    "placeholder": "Internal Staff",
-                    "maxlength": 255,
-                }
-            ),
-            "description": Textarea(
-                attrs={
-                    "placeholder": "Tell us about your experience or responsibilities...",
-                    "rows": 4,
-                }
-            ),
-            "category": TextInput(
-                attrs={
-                    "placeholder": "Work, Organization, Volunteer",
-                    "maxlength": 255,
-                }
-            ),
-            "skills": TextInput(
-                attrs={
-                    "placeholder": "Python, Django, Leadership",
-                }
-            ),
-            "duration": TextInput(
-                attrs={
-                    "placeholder": "Aug 2024 / Present",
-                    "maxlength": 100,
-                }
-            ),
+            "title": TextInput(attrs={"placeholder": "Company or Organization Name", "maxlength": 255}),
+            "role": TextInput(attrs={"placeholder": "Internal Staff", "maxlength": 255}),
+            "description": Textarea(attrs={"placeholder": "Tell us about your experience...", "rows": 4}),
+            "category": TextInput(attrs={"placeholder": "Work, Organization, Volunteer", "maxlength": 255}),
+            "skills": TextInput(attrs={"placeholder": "Python, Django, Leadership"}),
+            "duration": TextInput(attrs={"placeholder": "Aug 2024 / Present", "maxlength": 100}),
         }
+
+    def clean_title(self):
+        title = strip_tags(self.cleaned_data.get("title", "")).strip()
+        if not title:
+            raise ValidationError("Title can't contain only HTML tags.")
+        return title
+
+    def clean_role(self):
+        return strip_tags(self.cleaned_data.get("role", "")).strip()
+
+    def clean_description(self):
+        return strip_tags(self.cleaned_data.get("description", "")).strip()
+
+    def clean_category(self):
+        return strip_tags(self.cleaned_data.get("category", "")).strip()
+
+    def clean_skills(self):
+        return strip_tags(self.cleaned_data.get("skills", "")).strip()
+
+    def clean_duration(self):
+        return strip_tags(self.cleaned_data.get("duration", "")).strip()
 
 
 class CompetitionForm(ModelForm):
@@ -150,48 +130,39 @@ class CompetitionForm(ModelForm):
         }
 
         widgets = {
-            "title": TextInput(
-                attrs={
-                    "placeholder": "Freshman Cup 2026",
-                    "maxlength": 255,
-                }
-            ),
-            "award": TextInput(
-                attrs={
-                    "placeholder": "1st Place Winner",
-                    "maxlength": 255,
-                }
-            ),
-            "organizer": TextInput(
-                attrs={
-                    "placeholder": "EDS UI",
-                    "maxlength": 255,
-                }
-            ),
-            "location": TextInput(
-                attrs={
-                    "placeholder": "Depok, Indonesia",
-                    "maxlength": 255,
-                }
-            ),
-            "date_str": TextInput(
-                attrs={
-                    "placeholder": "Jul 2024",
-                    "maxlength": 100,
-                }
-            ),
-            "description": Textarea(
-                attrs={
-                    "placeholder": "Competition details or achievement specifics...",
-                    "rows": 4,
-                }
-            ),
-            "tags": TextInput(
-                attrs={
-                    "placeholder": "Debate, Public Speaking, Academic",
-                }
-            ),
+            "title": TextInput(attrs={"placeholder": "Freshman Cup 2026", "maxlength": 255}),
+            "award": TextInput(attrs={"placeholder": "1st Place Winner", "maxlength": 255}),
+            "organizer": TextInput(attrs={"placeholder": "EDS UI", "maxlength": 255}),
+            "location": TextInput(attrs={"placeholder": "Depok, Indonesia", "maxlength": 255}),
+            "date_str": TextInput(attrs={"placeholder": "Jul 2024", "maxlength": 100}),
+            "description": Textarea(attrs={"placeholder": "Competition details...", "rows": 4}),
+            "tags": TextInput(attrs={"placeholder": "Debate, Public Speaking, Academic"}),
         }
+
+    # --- Add XSS Protection Here ---
+    def clean_title(self):
+        title = strip_tags(self.cleaned_data.get("title", "")).strip()
+        if not title:
+            raise ValidationError("Event name can't contain only HTML tags.")
+        return title
+
+    def clean_award(self):
+        return strip_tags(self.cleaned_data.get("award", "")).strip()
+
+    def clean_organizer(self):
+        return strip_tags(self.cleaned_data.get("organizer", "")).strip()
+
+    def clean_location(self):
+        return strip_tags(self.cleaned_data.get("location", "")).strip()
+
+    def clean_date_str(self):
+        return strip_tags(self.cleaned_data.get("date_str", "")).strip()
+
+    def clean_description(self):
+        return strip_tags(self.cleaned_data.get("description", "")).strip()
+
+    def clean_tags(self):
+        return strip_tags(self.cleaned_data.get("tags", "")).strip()
 
 
 class ProjectForm(ModelForm):
@@ -214,43 +185,21 @@ class ProjectForm(ModelForm):
         }
 
         widgets = {
-            "title": TextInput(
-                attrs={
-                    "placeholder": "Portfolio Website",
-                    "maxlength": 255,
-                }
-            ),
-            "description": Textarea(
-                attrs={
-                    "placeholder": "Tell us about your project",
-                    "rows": 3,
-                }
-            ),
-            "tech_stack": TextInput(
-                attrs={
-                    "placeholder": "Django, Python, HTML, CSS",
-                }
-            ),
-            "project_url": URLInput(
-                attrs={
-                    "placeholder": "https://github.com/kakBurhan/burhanquestv4",
-                }
-            ),
-            "project_image_url": URLInput(
-                attrs={
-                    "placeholder": "https://drive.google.com/thumbnail?id=...&sz=w1000",
-                }
-            ),
+            "title": TextInput(attrs={"placeholder": "Portfolio Website", "maxlength": 255}),
+            "description": Textarea(attrs={"placeholder": "Tell us about your project", "rows": 3}),
+            "tech_stack": TextInput(attrs={"placeholder": "Django, Python, HTML, CSS"}),
+            "project_url": URLInput(attrs={"placeholder": "https://github.com/..."}),
+            "project_image_url": URLInput(attrs={"placeholder": "https://drive.google.com/..."}),
         }
 
     def clean_title(self):
-        title = strip_tags(self.cleaned_data["title"]).strip()
+        title = strip_tags(self.cleaned_data.get("title", "")).strip()
         if not title:
             raise ValidationError("Project name can't contain only HTML tags.")
         return title
 
     def clean_tech_stack(self):
-        return strip_tags(self.cleaned_data["tech_stack"]).strip()
+        return strip_tags(self.cleaned_data.get("tech_stack", "")).strip()
 
     def clean_description(self):
-        return strip_tags(self.cleaned_data["description"]).strip()
+        return strip_tags(self.cleaned_data.get("description", "")).strip()
