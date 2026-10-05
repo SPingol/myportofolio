@@ -47,6 +47,9 @@ Class : PBP KKI
 - NEW Added Update function for 
 - Refactored code to use base templates rather than several copies with minor changes 
 
+30/09/26 & 05/10/26
+- Tutorial 4 & 5 changes (Placeholder)
+
 ## REFLECTION QUESTIONS
 
 ### Assignment 1
@@ -92,6 +95,23 @@ Generally JSON is prefered because it is faster and much easier to work with com
 3. Explain the flow that occurs when you use a view function to return your portfolio data in JSON format. Why do we need to perform the serialization process on Django models before returning the data?
 
 When a client requests portofolio data from a Django app, an HTTP request is sent to a specific URL route. The route maps the request to the corresponding view function, which sends queries to the database using Django ORM to fetch the necessary records. The view serializes them into a text compatible format, converting records into a JSON string. The view wraps the JSON data into an HTTP response and  sends it back to the client, where the frontend can natively parse and display the portfolio items.
+
+### Assignment 4
+N/A
+
+
+### Assignment 5
+1. Explain what debouncing is and why this technique is important to implement in a search feature that uses AJAX.
+
+Debouncing is a method to delay the execution of a function until a specified period of inactivity has passed, since the last time debouncing was activated, reseting the timer if its triggered again. This helps to reduce server load and API calls by only sending requests once it is actually complete e.g a user typing a search query, only sending a request once the user has stopped typing for 500ms. Furthermore, it prevents race conditions where an older request may override the latest request due to latency. Lastly, it saves bandwith and improves UI responsiveness.
+
+
+2. Explain the purpose of using await when we use fetch(). What would happen if we did not use await?
+fetch()  an asynchornous function that returns a Promise that resolves to a Response object once the request is complete. await pauses the execution of an asynch function until the Promise is ready, thus allowing for synchornous work flow with Response. Without await, a pending Promise is held instead of data, with fetch() returning an unfuffiled Promise response instead of an HTTPS response. Furthermore, Type errors can occur when calling response methods, and the work flow will be asynchronous, resulting in the code potentially trying to process undefined or unresolved data.
+
+3. Explain what a Cross-Site Scripting (XSS) attack is and why data displayed through AJAX/JavaScript is more vulnerable to this attack than data displayed directly through a Django template.
+
+XSS is where an attacker injects malicious code into the web application data, typically via JavaScript. When a user views the data, their browser executes the injected malicious code, opening up a variety of security vulnerabilities, such as exposing session cookies or auth tokens. AJAX/JavaScript is especially vulnerable this type of attack since it does not automatically clean data, meaning that if the malicious code gets past the AJAX response the browser will immediately run it without question. Whereas, Django template does automatically cleans and check data being entered.
 ## AI DISCLOSURE
 
 ### Assignment 1
@@ -112,3 +132,6 @@ Ultimately, AI is a useful supportive tool to help with the learning process esp
 
 ### Assignment 3
 For this assignment, AI was utilized much in the same way as assignment 1 & 2, though it is to be noted at this stage it is only useful and safe to use for small chunks and consultation as at this size and complexity it starts becoming confused and requires heavy manual changes to properly integrate the suggestions or solutions provided. 
+
+### Assignment 4 & 5
+Same usage as prior assignments, though it is to be noted that as the complexity of the project increases the more "hallucinations" or garbage outputs begin to appear and needs careful examination before implementing
