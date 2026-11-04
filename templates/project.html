@@ -1,226 +1,267 @@
-{% extends 'base.html' %}
-{% block title %}Projects - {{ name }}{% endblock %}
+{% extends "base.html" %}
 
 {% block content %}
-<section class="experience-section" id="projects">
-  <div class="container">
-    <div class="project-header">
-      <h1 class="section-title" style="margin-bottom: 0;">Projects</h1>
-      {% if user.is_superuser %}
-      <button type="button" class="button project-add-button" popovertarget="add-project-modal">
-        <span aria-hidden="true">+</span>
-        Add Project
-      </button>
-      {% endif %}
-    </div>
+<section class="projects-container">
+  <h1>Projects</h1>
 
-    <!-- Search Form -->
-    <form id="project-search-form" class="project-search">
-      <input type="search" id="search-input" name="q" placeholder="Search by title or tech stack"
-        class="project-search__input" aria-label="Search by project title" />
+  <!-- Search and Actions -->
+  <div class="projects-header">
+    <form id="project-search-form" class="search-form">
+      <input type="text" id="search-input" name="q" placeholder="Search projects by title..." autocomplete="off">
       <button type="submit" class="button">Search</button>
     </form>
 
-    <!-- Dynamic Container -->
-    <div id="grid" class="card-grid"></div>
-
+    {% if user.is_superuser %}
+    <button type="button" class="button button-primary" popovertarget="add-project-modal">Add Project</button>
+    {% endif %}
   </div>
-</section>
 
-<!-- Modal for Adding Project -->
-{% if user.is_superuser %}
-<div id="add-project-modal" popover class="modal-backdrop">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Add New Project</h3>
-      <button type="button" onclick="closeProjectModal()" class="modal-close-btn">&times;</button>
+  <!-- UI States -->
+  <div id="loading" class="state-message hide">Loading projects...</div>
+  <div id="error" class="state-message hide">Could not load projects. Please try again.</div>
+  <div id="empty" class="state-message hide">No projects match your search.</div>
+
+  <!-- Projects Grid -->
+  <div id="grid" class="projects-grid hide">
+    <!-- Project cards will be injected here by JavaScript -->
+  </div>
+
+  <!-- Add Project Modal -->
+  {% if user.is_superuser %}
+  <div id="add-project-modal" popover class="modal">
+    <div class="modal-content">
+      <h2>Create New Project</h2>
+      <form id="project-form">
+        <div class="form-group">
+          <label for="title">Title</label>
+          <input type="text" id="title" name="title" required>
+        </div>
+
+        <div class="form-group">
+          <label for="tech_stack">Tech Stack</label>
+          <input type="text" id="tech_stack" name="tech_stack" required>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" rows="4" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="project_url">Project URL (Optional)</label>
+          <input type="url" id="project_url" name="project_url">
+        </div>
+
+        <div class="form-group">
+          <label for="project_image_url">Image URL (Optional)</label>
+          <input type="url" id="project_image_url" name="project_image_url">
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="button" popovertarget="add-project-modal"
+            popovertargetaction="hide">Cancel</button>
+          <button type="submit" class="button button-primary">Save Project</button>
+        </div>
+      </form>
     </div>
-    <form id="project-form">
-      {% csrf_token %}
-      <div class="form-group">
-        <label>Title *</label>
-        <input type="text" name="title" required class="project-search__input" />
-      </div>
-      <div class="form-group">
-        <label>Description</label>
-        <textarea name="description" rows="3" class="project-search__input"></textarea>
-      </div>
-      <div class="form-group">
-        <label>Tech Stack</label>
-        <input type="text" name="tech_stack" class="project-search__input"
-          placeholder="e.g. Python, Django, JavaScript" />
-      </div>
-      <div class="form-group">
-        <label>Link</label>
-        <input type="url" name="link" class="project-search__input" />
-      </div>
-      <div class="modal-footer">
-        <button type="button" onclick="closeProjectModal()" class="button button-secondary">Cancel</button>
-        <button type="submit" class="button">Save Project</button>
-      </div>
-    </form>
   </div>
-</div>
-{% endif %}
+  {% endif %}
 
-<script>
-  const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
-  const BASE_PROJECTS_ENDPOINT = "/api/projects/";
-  const CREATE_PROJECT_ENDPOINT = "/projects/add-ajax/";
+  <!-- CSRF Token (Required for initializing the cookie for non-logged-in users) -->
+  {% csrf_token %}
 
-  const searchInput = document.getElementById('search-input');
-  const searchForm = document.getElementById('project-search-form');
-  const gridContainer = document.getElementById('grid');
-  const projectForm = document.getElementById('project-form');
+  <!-- JavaScript Implementation -->
+  <script>
+    const BASE_PROJECTS_ENDPOINT = "{% url 'api:project-list' %}";
+    const DETAIL_PROJECT_ENDPOINT = "{% url 'api:project-detail' '00000000-0000-0000-0000-000000000000' %}";
+    const STAR_PROJECT_ENDPOINT = "{% url 'api:project-star' '00000000-0000-0000-0000-000000000000' %}";
+    const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
+    const IS_AUTHENTICATED = "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
 
-  const SEARCH_DEBOUNCE_DELAY = 300;
-  let searchDebounceTimer;
+    const loadingState = document.getElementById('loading');
+    const errorState = document.getElementById('error');
+    const emptyState = document.getElementById('empty');
+    const gridContainer = document.getElementById('grid');
+    const searchForm = document.getElementById('project-search-form');
+    const searchInput = document.getElementById('search-input');
+    const projectForm = document.getElementById('project-form');
 
-  function escapeHtml(value) {
-    return String(value ?? '')
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#39;');
-  }
+    let projectsAbortController;
+    let searchDebounceTimer;
 
-  function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
+    function getCookie(name) {
+      const prefix = `${name}=`;
+      const cookie = document.cookie
+        .split(';')
+        .map(value => value.trim())
+        .find(value => value.startsWith(prefix));
+      return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : null;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
+    }
+
+    function projectEndpoint(pattern, id) {
+      return pattern.replace('00000000-0000-0000-0000-000000000000', id);
+    }
+
+    function displayPageSection({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
+      loadingState.classList.toggle('hide', !showLoading);
+      errorState.classList.toggle('hide', !showError);
+      emptyState.classList.toggle('hide', !showEmpty);
+      gridContainer.classList.toggle('hide', !showGrid);
+    }
+
+    function buildProjectCardElement(project) {
+      const article = document.createElement('article');
+      article.className = 'experience-card';
+
+      const image = project.project_image_url
+        ? `<img src="${escapeHtml(project.project_image_url)}" alt="${escapeHtml(project.title)}" class="project-image">`
+        : '';
+      const link = project.project_url
+        ? `<a href="${escapeHtml(project.project_url)}" class="button">Open project</a>`
+        : '';
+      const star = IS_AUTHENTICATED
+        ? `<button type="button" class="button button-star${project.is_starred ? ' is-starred' : ''}"
+            data-action="star" data-id="${escapeHtml(project.id)}"
+            title="${escapeHtml(project.starred_by_names)}">
+            ${project.is_starred ? 'Unstar' : 'Star'} (${project.star_count})</button>`
+        : `<a href="{% url 'main:login' %}" class="button">Login to star (${project.star_count})</a>`;
+      const remove = IS_SUPERUSER
+        ? `<button type="button" class="button button-danger" data-action="delete"
+            data-id="${escapeHtml(project.id)}">Delete</button>`
+        : '';
+
+      article.innerHTML = `${image}<h2>${escapeHtml(project.title)}</h2>
+        <span class="experience-category">${escapeHtml(project.tech_stack)}</span>
+        <p class="experience-description">${escapeHtml(project.description)}</p>
+        <div class="project-card-actions"><div class="project-actions">
+        ${link}${star}${remove}</div></div>`;
+      return article;
+    }
+
+    async function fetchProjects(searchQuery = '') {
+      if (projectsAbortController) projectsAbortController.abort();
+      projectsAbortController = new AbortController();
+
+      try {
+        displayPageSection({ showLoading: true });
+        const url = new URL(BASE_PROJECTS_ENDPOINT, window.location.origin);
+        if (searchQuery) url.searchParams.set('title', searchQuery);
+
+        const response = await fetch(url, {
+          headers: { Accept: 'application/json' },
+          signal: projectsAbortController.signal,
+        });
+
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+        const projects = await response.json();
+        gridContainer.replaceChildren(...projects.map(buildProjectCardElement));
+        displayPageSection({ showGrid: projects.length > 0, showEmpty: projects.length === 0 });
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+        console.error(error);
+        displayPageSection({ showError: true });
       }
     }
-    return cookieValue;
-  }
 
-  function closeProjectModal() {
-    const modal = document.getElementById("add-project-modal");
-    if (modal) modal.hidePopover();
-  }
-
-  function buildProjectCardElement(item) {
-    const fields = item.fields;
-    const pk = item.pk;
-    const articleElement = document.createElement('article');
-    articleElement.className = 'card';
-
-    const title = escapeHtml(fields.title);
-    const description = escapeHtml(fields.description || '').replace(/\n/g, '<br>');
-    const link = escapeHtml(fields.link);
-    const techStack = fields.tech_stack_list || [];
-
-    const deleteHtml = IS_SUPERUSER
-      ? `<form action="/projects/${pk}/delete/" method="POST" style="display:inline;" onsubmit="return confirm('Delete this project?')">
-          <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-          <button type="submit" class="button button-danger">Delete</button>
-        </form>`
-      : '';
-
-    articleElement.innerHTML = `
-      <div class="card-header">
-        <div>
-          <h3>${title}</h3>
-        </div>
-      </div>
-      <div class="card-body">
-        <p>${description}</p>
-        ${link ? `<p><a href="${link}" target="_blank">View Project &rarr;</a></p>` : ''}
-      </div>
-      <div class="card-footer">
-        <div class="card-tags">
-          ${techStack.map(tech => `<span class="tech-tag">${escapeHtml(tech)}</span>`).join('')}
-        </div>
-        <div class="card-actions">
-          <form action="/projects/${pk}/star/" method="POST" style="display:inline;">
-            <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-            <button type="submit" class="button button-small">
-              <span style="color: ${fields.is_starred ? '#f59e0b' : '#9ca3af'};">★</span> ${fields.star_count || 0}
-            </button>
-          </form>
-          ${deleteHtml}
-        </div>
-      </div>
-    `;
-    return articleElement;
-  }
-
-  async function fetchProjects(searchQuery = '') {
-    gridContainer.innerHTML = `<p class="empty-state">Loading projects...</p>`;
-
-    try {
-      const url = searchQuery ? `${BASE_PROJECTS_ENDPOINT}?q=${encodeURIComponent(searchQuery)}` : BASE_PROJECTS_ENDPOINT;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
-      const data = await response.json();
-
-      if (!data || data.length === 0) {
-        gridContainer.innerHTML = `<p class="empty-state">No projects found.</p>`;
-        return;
-      }
-
-      gridContainer.innerHTML = '';
-      data.forEach(item => gridContainer.appendChild(buildProjectCardElement(item)));
-    } catch (error) {
-      gridContainer.innerHTML = `<p class="form-error">Failed to load projects.</p>`;
+    function apiErrorMessage(data, status) {
+      const messages = Object.values(data).flat().filter(value => typeof value === 'string');
+      return messages.join(' ') || `Request failed (HTTP ${status}).`;
     }
-  }
 
-  function searchProjects() {
-    fetchProjects(searchInput.value.trim());
-  }
-
-  searchInput.addEventListener('input', () => {
-    clearTimeout(searchDebounceTimer);
-    searchDebounceTimer = setTimeout(searchProjects, SEARCH_DEBOUNCE_DELAY);
-  });
-
-  searchForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    clearTimeout(searchDebounceTimer);
-    searchProjects();
-  });
-
-  async function addProject(event) {
-    event.preventDefault();
-    const submitBtn = projectForm.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-
-    try {
-      const response = await fetch(CREATE_PROJECT_ENDPOINT, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': getCookie('csrftoken') },
-        body: new FormData(projectForm),
+    async function writeProject(url, method, payload) {
+      const response = await fetch(url, {
+        method,
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken'),
+        },
+        body: payload === undefined ? undefined : JSON.stringify(payload),
       });
 
+      if (response.status === 204) return null;
       const data = await response.json().catch(() => ({}));
-
-      if (response.status === 201) {
-        projectForm.reset();
-        closeProjectModal();
-        if (typeof showToast === 'function') showToast("Project added successfully!", false);
-        fetchProjects(searchInput.value.trim());
-      } else {
-        const errorMsg = data.message || 'Validation error saving project.';
-        if (typeof showToast === 'function') showToast(errorMsg, true);
-      }
-    } catch (err) {
-      if (typeof showToast === 'function') showToast("Network error while saving.", true);
-    } finally {
-      submitBtn.disabled = false;
+      if (!response.ok) throw new Error(apiErrorMessage(data, response.status));
+      return data;
     }
-  }
 
-  if (projectForm) {
-    projectForm.addEventListener('submit', addProject);
-  }
+    async function addProject(event) {
+      event.preventDefault();
+      const button = projectForm.querySelector('button[type="submit"]');
+      button.disabled = true;
 
-  fetchProjects(searchInput.value.trim());
-</script>
-{% endblock %}
+      try {
+        const fields = new FormData(projectForm);
+        const payload = Object.fromEntries([
+          'title', 'description', 'tech_stack', 'project_url', 'project_image_url',
+        ].map(name => [name, fields.get(name)]));
+
+        await writeProject(BASE_PROJECTS_ENDPOINT, 'POST', payload);
+        projectForm.reset();
+        document.getElementById('add-project-modal').hidePopover();
+
+        // Ensure you have a showToast function defined globally (e.g., in base.html)
+        if (typeof showToast === 'function') showToast('Success', 'Project created.', 'success');
+
+        await fetchProjects(searchInput.value.trim());
+      } catch (error) {
+        if (typeof showToast === 'function') showToast('Could not create project', error.message, 'error');
+      } finally {
+        button.disabled = false;
+      }
+    }
+
+    if (projectForm) projectForm.addEventListener('submit', addProject);
+
+    gridContainer.addEventListener('click', async function (event) {
+      const button = event.target.closest('button[data-action]');
+      if (!button || button.disabled) return;
+
+      const action = button.dataset.action;
+      if (action === 'delete' && !window.confirm('Delete this project?')) return;
+
+      button.disabled = true;
+      try {
+        const pattern = action === 'star' ? STAR_PROJECT_ENDPOINT : DETAIL_PROJECT_ENDPOINT;
+        await writeProject(
+          projectEndpoint(pattern, button.dataset.id),
+          action === 'star' ? 'POST' : 'DELETE'
+        );
+
+        if (typeof showToast === 'function') {
+          showToast('Success', action === 'star' ? 'Star updated.' : 'Project deleted.', 'success');
+        }
+        await fetchProjects(searchInput.value.trim());
+      } catch (error) {
+        if (typeof showToast === 'function') showToast('Request failed', error.message, 'error');
+      } finally {
+        button.disabled = false;
+      }
+    });
+
+    searchInput.addEventListener('input', function () {
+      clearTimeout(searchDebounceTimer);
+      searchDebounceTimer = setTimeout(() => fetchProjects(searchInput.value.trim()), 300);
+    });
+
+    searchForm.addEventListener('submit', function (event) {
+      event.preventDefault();
+      clearTimeout(searchDebounceTimer);
+      fetchProjects(searchInput.value.trim());
+    });
+
+    // Initial load
+    fetchProjects(searchInput.value.trim());
+  </script>
+</section>
+{% endblock content %}

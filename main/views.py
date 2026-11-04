@@ -211,7 +211,7 @@ def register(request):
         form.save()
         messages.success(request, "Account created successfully. Please log in.")
         return redirect("main:login")
-
+    
     return render(request, "register.html", {"name": "Serafin", "form": form})
 
 
