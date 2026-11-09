@@ -10,6 +10,7 @@ class Education(models.Model):
     description_header = models.CharField(max_length=255, default="Coursework:")
     coursework = models.TextField(help_text="Newline-separated list of courses")
     location = models.CharField(max_length=255, blank=True, null=True) # Ex: "Depok, Indonesia"
+    starred_by = models.ManyToManyField(User, related_name="starred_educations", blank=True)
 
     def __str__(self):
         return f"{self.degree} - {self.institution}"
@@ -51,6 +52,8 @@ class Experience(models.Model):
         null=True,
         help_text="Display duration like '2023 – Present' or 'Jul 2023 – Aug 2024'",
     )  
+    # Added star relation for Assignment 6
+    starred_by = models.ManyToManyField(User, related_name="starred_experiences", blank=True)
 
     def __str__(self):
         return self.title
@@ -91,6 +94,7 @@ class Competition(models.Model):
         null=True, 
         help_text="Comma-separated tags (e.g. Debate, Public Speaking, Academic)"
     )
+    starred_by = models.ManyToManyField(User, related_name="starred_competitions", blank=True)
 
     def __str__(self):
         return f"{self.title} - {self.award}"

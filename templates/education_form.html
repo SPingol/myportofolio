@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Add Education - {{ name }}{% endblock%}
+{% block title %}Add/Edit Education - {{ name }}{% endblock%}
 
 {% block content %}
 <section class="experience-section">
     <div class="container">
-        <h1>Add New Education</h1>
-        <form method="post" action="{% url 'main:create_education' %}" class="education-form">
+        <h1>Education Form</h1>
+        <form method="post" action="" class="education-form">
 
             {% csrf_token %}{% for field in form %}
             <div class="form-group">
@@ -16,7 +16,7 @@
                 {% endfor %}
             </div>
             {% endfor %}
-            <button type="submit" class="button">Add Education</button>
+            <button type="submit" class="button">Save education</button>
             <a href="{% url 'main:show_education' %}" class="button button-secondary">Cancel</a>
         </form>
     </div>

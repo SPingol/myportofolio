@@ -1,12 +1,9 @@
 import uuid
-
 from django.contrib.auth.models import Group, User
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase
-
-from main.models import Project
-
+from main.models import Project, Experience, Education, Competition
 
 class ProjectAPITest(APITestCase):
     def setUp(self):
@@ -128,7 +125,6 @@ class ProjectAPITest(APITestCase):
     def test_session_write_with_csrf_succeeds(self):
         client = APIClient(enforce_csrf_checks=True)
         client.login(username="owner", password="test-password")
-        # The Browsable API form renders a real CSRF token into the response.
         page = client.get(self.list_url, HTTP_ACCEPT="text/html")
         self.assertEqual(page.status_code, status.HTTP_200_OK)
         token = client.cookies["csrftoken"].value
@@ -136,3 +132,39 @@ class ProjectAPITest(APITestCase):
             self.list_url, self.payload, format="json", HTTP_X_CSRFTOKEN=token,
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+
+class ExperienceAPITest(APITestCase):
+    def setUp(self):
+        self.owner = User.objects.create_superuser(username="owner", password="pwd")
+        self.editor = User.objects.create_user(username="editor", password="pwd")
+        self.editor.groups.add(Group.objects.create(name="Editor"))
+        self.visitor = User.objects.create_user(username="visitor", password="pwd")
+        
+        self.experience = Experience.objects.create(title="Dev", role="Lead", description="Job")
+        self.list_url = reverse("api:experience-list")
+        self.detail_url = reverse("api:experience-detail", args=[self.experience.id])
+        self.star_url = reverse("api:experience-star", args=[self.experience.id])
+        self.payload = {"title": "New Job", "role": "Staff", "description": "Desc"}
+
+    def test_roles_and_permissions(self):
+        # 1. Visitor Cannot Edit/Delete
+        self.client.force_authenticate(user=self.visitor)
+        self.assertEqual(self.client.patch(self.detail_url, {"title": "X"}).status_code, 403)
+        self.assertEqual(self.client.post(self.list_url, self.payload).status_code, 403)
+        
+        # 2. Editor Can Edit, but not Create/Delete
+        self.client.force_authenticate(user=self.editor)
+        self.assertEqual(self.client.patch(self.detail_url, {"title": "Edited"}).status_code, 200)
+        self.assertEqual(self.client.post(self.list_url, self.payload).status_code, 403)
+        self.assertEqual(self.client.delete(self.detail_url).status_code, 403)
+        
+        # 3. Owner Can Do All
+        self.client.force_authenticate(user=self.owner)
+        self.assertEqual(self.client.post(self.list_url, self.payload).status_code, 201)
+        self.assertEqual(self.client.delete(self.detail_url).status_code, 204)
+        
+    def test_star_toggles(self):
+        self.client.force_authenticate(user=self.visitor)
+        self.client.post(self.star_url)
+        self.assertEqual(Experience.objects.get(id=self.experience.id).starred_by.count(), 1)

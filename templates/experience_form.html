@@ -1,9 +1,10 @@
-{% extends "base.html" %} {% block title %}Add Experience - {{ name }}{% endblock%}
+{% extends "base.html" %}
+{% block title %}Add/Edit Experience - {{ name }}{% endblock%}
 {% block content %}
 <section class="experience-section">
     <div class="container">
-        <h1>Add New Experience</h1>
-        <form method="post" action="{% url 'main:create_experience' %}" class="experience-form">
+        <h1>Experience Form</h1>
+        <form method="post" action="" class="experience-form">
 
             {% csrf_token %} {% for field in form %}
             <div class="form-group">
@@ -13,7 +14,7 @@
                 {% endfor %}
             </div>
             {% endfor %}
-            <button type="submit" class="button">Add experience</button>
+            <button type="submit" class="button">Save experience</button>
             <a href="{% url 'main:show_experience' %}" class="button button-secondary">Cancel</a>
         </form>
     </div>

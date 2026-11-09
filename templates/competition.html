@@ -7,9 +7,9 @@
     <div class="project-header">
       <h1 class="section-title" style="margin-bottom: 0;">Competitions & Achievements</h1>
       {% if user.is_superuser %}
-      <button type="button" class="button project-add-button" popovertarget="add-competition-modal">
-        <span aria-hidden="true">+</span>
-        Add Competition
+      <button type="button" class="button project-add-button" popovertarget="add-competition-modal"
+        onclick="resetCompetitionModal()">
+        <span aria-hidden="true">+</span> Add Competition
       </button>
       {% endif %}
     </div>
@@ -17,94 +17,114 @@
     <!-- Search Form -->
     <form id="competition-search-form" class="project-search">
       <input type="search" id="search-input" name="q" placeholder="Search by title or organizer"
-        class="project-search__input" aria-label="Search by competition title" />
+        class="project-search__input" />
       <button type="submit" class="button">Search</button>
     </form>
 
-    <!-- Dynamic Container -->
+    <div id="loading" class="hide">
+      <p>Loading...</p>
+    </div>
+    <div id="error" class="hide">
+      <p class="form-error">An error occurred while loading.</p>
+    </div>
+    <div id="empty" class="hide">
+      <p class="empty-state">No entries found.</p>
+    </div>
     <div id="grid" class="card-grid"></div>
 
   </div>
 </section>
 
-<!-- Modal for Adding Competition -->
-{% if user.is_superuser %}
+<!-- Unified Modal for Adding/Editing Competition -->
+{% if user.is_superuser or 'Editor' in user.groups.all|stringformat:"s" %}
 <div id="add-competition-modal" popover class="modal-backdrop">
   <div class="modal-content">
     <div class="modal-header">
-      <h3>Add New Competition</h3>
+      <h3 id="modal-title-display">Add/Edit Competition</h3>
       <button type="button" onclick="closeCompetitionModal()" class="modal-close-btn">&times;</button>
     </div>
     <form id="competition-form">
+      <input type="hidden" name="id" id="form-edit-id" value="">
       {% csrf_token %}
       <div class="form-group">
         <label>Title *</label>
-        <input type="text" name="title" required class="project-search__input" />
+        <input type="text" name="title" id="form-title" required class="project-search__input" />
       </div>
       <div class="form-group">
         <label>Organizer</label>
-        <input type="text" name="organizer" class="project-search__input" />
+        <input type="text" name="organizer" id="form-organizer" class="project-search__input" />
       </div>
       <div class="form-group">
         <label>Award</label>
-        <input type="text" name="award" class="project-search__input" />
+        <input type="text" name="award" id="form-award" class="project-search__input" />
       </div>
       <div class="form-group">
         <label>Date (e.g. Aug 2023)</label>
-        <input type="text" name="date_str" class="project-search__input" />
+        <input type="text" name="date_str" id="form-date" class="project-search__input" />
       </div>
       <div class="form-group">
         <label>Location</label>
-        <input type="text" name="location" class="project-search__input" />
+        <input type="text" name="location" id="form-location" class="project-search__input" />
       </div>
       <div class="form-group">
         <label>Description</label>
-        <textarea name="description" rows="3" class="project-search__input"></textarea>
+        <textarea name="description" id="form-desc" rows="3" class="project-search__input"></textarea>
+      </div>
+      <div class="form-group">
+        <label>Tags (Comma Separated)</label>
+        <input type="text" name="tags" id="form-tags" class="project-search__input" />
       </div>
       <div class="modal-footer">
         <button type="button" onclick="closeCompetitionModal()" class="button button-secondary">Cancel</button>
-        <button type="submit" class="button">Save Competition</button>
+        <button type="submit" class="button">Save</button>
       </div>
     </form>
   </div>
 </div>
 {% endif %}
 
+{% csrf_token %}
 <script>
-  const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
-  const BASE_COMPETITIONS_ENDPOINT = "/api/competitions/";
-  const CREATE_COMPETITION_ENDPOINT = "/competitions/add-ajax/";
+  const BASE_COMPETITIONS_ENDPOINT = "{% url 'api:competition-list' %}";
+  const DETAIL_COMPETITION_ENDPOINT = "{% url 'api:competition-detail' '00000000-0000-0000-0000-000000000000' %}";
+  const STAR_COMPETITION_ENDPOINT = "{% url 'api:competition-star' '00000000-0000-0000-0000-000000000000' %}";
 
-  const searchInput = document.getElementById('search-input');
-  const searchForm = document.getElementById('competition-search-form');
+  const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
+  const IS_AUTHENTICATED = "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
+  const IS_EDITOR = "{% if 'Editor' in user.groups.all|stringformat:'s' %}true{% else %}false{% endif %}" === "true";
+  const CAN_EDIT = IS_SUPERUSER || IS_EDITOR;
+
+  const loadingState = document.getElementById('loading');
+  const errorState = document.getElementById('error');
+  const emptyState = document.getElementById('empty');
   const gridContainer = document.getElementById('grid');
+  const searchForm = document.getElementById('competition-search-form');
+  const searchInput = document.getElementById('search-input');
   const competitionForm = document.getElementById('competition-form');
 
-  const SEARCH_DEBOUNCE_DELAY = 300;
+  let abortController;
   let searchDebounceTimer;
-
-  function escapeHtml(value) {
-    return String(value ?? '')
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#39;');
-  }
+  let cachedData = {};
 
   function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
+    const prefix = `${name}=`;
+    const cookie = document.cookie.split(';').map(v => v.trim()).find(v => v.startsWith(prefix));
+    return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : null;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+  }
+
+  function formatEndpoint(pattern, id) {
+    return pattern.replace('00000000-0000-0000-0000-000000000000', id);
+  }
+
+  function displayState({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
+    loadingState.classList.toggle('hide', !showLoading);
+    errorState.classList.toggle('hide', !showError);
+    emptyState.classList.toggle('hide', !showEmpty);
+    gridContainer.classList.toggle('hide', !showGrid);
   }
 
   function closeCompetitionModal() {
@@ -112,129 +132,165 @@
     if (modal) modal.hidePopover();
   }
 
+  function resetCompetitionModal() {
+    if (competitionForm) {
+      competitionForm.reset();
+      document.getElementById('form-edit-id').value = "";
+      document.getElementById('modal-title-display').innerText = "Add Competition";
+    }
+  }
+
+  window.openEditModal = function (id) {
+    const item = cachedData[id];
+    if (!item || !competitionForm) return;
+    document.getElementById('form-edit-id').value = item.id;
+    document.getElementById('form-title').value = item.title;
+    document.getElementById('form-organizer').value = item.organizer || "";
+    document.getElementById('form-award').value = item.award || "";
+    document.getElementById('form-date').value = item.date_str || "";
+    document.getElementById('form-location').value = item.location || "";
+    document.getElementById('form-desc').value = item.description || "";
+    document.getElementById('form-tags').value = item.tags || "";
+    document.getElementById('modal-title-display').innerText = "Edit Competition";
+    document.getElementById('add-competition-modal').showPopover();
+  };
+
   function buildCompetitionCardElement(item) {
-    const fields = item.fields;
-    const pk = item.pk;
-    const articleElement = document.createElement('article');
-    articleElement.className = 'card';
+    cachedData[item.id] = item;
+    const article = document.createElement('article');
+    article.className = 'card';
 
-    const title = escapeHtml(fields.title);
-    const organizer = escapeHtml(fields.organizer);
-    const location = escapeHtml(fields.location);
-    const award = escapeHtml(fields.award);
-    const dateStr = escapeHtml(fields.date_str);
-    const description = escapeHtml(fields.description || '').replace(/\n/g, '<br>');
-    const tagsList = fields.tags_list || [];
+    const starBtn = IS_AUTHENTICATED
+      ? `<button type="button" class="button button-small" data-action="star" data-id="${item.id}">
+          <span style="color: ${item.is_starred ? '#f59e0b' : '#9ca3af'};">★</span> ${item.star_count}
+         </button>`
+      : `<a href="{% url 'main:login' %}" class="button button-small">★ ${item.star_count}</a>`;
 
-    const deleteHtml = IS_SUPERUSER
-      ? `<form action="/competitions/${pk}/delete/" method="POST" style="display:inline;" onsubmit="return confirm('Delete this competition?')">
-          <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-          <button type="submit" class="button button-danger">Delete</button>
-        </form>`
-      : '';
+    const editBtn = CAN_EDIT
+      ? `<button type="button" class="button button-secondary button-small" onclick="openEditModal('${item.id}')">Edit</button>` : '';
 
-    articleElement.innerHTML = `
+    const deleteBtn = IS_SUPERUSER
+      ? `<button type="button" class="button button-danger button-small" data-action="delete" data-id="${item.id}">Delete</button>` : '';
+
+    article.innerHTML = `
       <div class="card-header">
         <div>
-          ${award ? `<span class="award-badge">${award}</span>` : ''}
-          <h3>${title}</h3>
+          ${item.award ? `<span class="award-badge">${escapeHtml(item.award)}</span>` : ''}
+          <h3>${escapeHtml(item.title)}</h3>
           <p class="card-subtitle">
-            ${organizer} ${location ? `· ${location}` : ''}
-            ${dateStr ? `<span class="date-tag">• ${dateStr}</span>` : ''}
+            ${escapeHtml(item.organizer)} ${item.location ? `· ${escapeHtml(item.location)}` : ''}
+            ${item.date_str ? `<span class="date-tag">• ${escapeHtml(item.date_str)}</span>` : ''}
           </p>
         </div>
       </div>
       <div class="card-body">
-        <p>${description}</p>
+        <p>${escapeHtml(item.description).replace(/\n/g, '<br>')}</p>
       </div>
       <div class="card-footer">
         <div class="card-tags">
-          ${tagsList.map(tag => `<span class="tech-tag">${escapeHtml(tag)}</span>`).join('')}
+          ${(item.tags_list || []).map(tag => `<span class="tech-tag">${escapeHtml(tag)}</span>`).join('')}
         </div>
         <div class="card-actions">
-          <form action="/competitions/${pk}/star/" method="POST" style="display:inline;">
-            <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-            <button type="submit" class="button button-small">
-              <span style="color: ${fields.is_starred ? '#f59e0b' : '#9ca3af'};">★</span> ${fields.star_count || 0}
-            </button>
-          </form>
-          ${deleteHtml}
+          ${starBtn}
+          ${editBtn}
+          ${deleteBtn}
         </div>
       </div>
     `;
-    return articleElement;
+    return article;
   }
 
-  async function fetchCompetitions(searchQuery = '') {
-    gridContainer.innerHTML = `<p class="empty-state">Loading competitions...</p>`;
-
+  async function fetchItems(searchQuery = '') {
+    if (abortController) abortController.abort();
+    abortController = new AbortController();
     try {
-      const url = searchQuery ? `${BASE_COMPETITIONS_ENDPOINT}?q=${encodeURIComponent(searchQuery)}` : BASE_COMPETITIONS_ENDPOINT;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+      displayState({ showLoading: true });
+      const url = new URL(BASE_COMPETITIONS_ENDPOINT, window.location.origin);
+      if (searchQuery) url.searchParams.set('q', searchQuery);
+
+      const response = await fetch(url, { headers: { Accept: 'application/json' }, signal: abortController.signal });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
       const data = await response.json();
-
-      if (!data || data.length === 0) {
-        gridContainer.innerHTML = `<p class="empty-state">No competitions found.</p>`;
-        return;
-      }
-
-      gridContainer.innerHTML = '';
-      data.forEach(item => gridContainer.appendChild(buildCompetitionCardElement(item)));
+      gridContainer.replaceChildren(...data.map(buildCompetitionCardElement));
+      displayState({ showGrid: data.length > 0, showEmpty: data.length === 0 });
     } catch (error) {
-      gridContainer.innerHTML = `<p class="form-error">Failed to load competitions.</p>`;
+      if (error.name === 'AbortError') return;
+      displayState({ showError: true });
     }
   }
 
-  function searchCompetitions() {
-    fetchCompetitions(searchInput.value.trim());
-  }
-
-  searchInput.addEventListener('input', () => {
-    clearTimeout(searchDebounceTimer);
-    searchDebounceTimer = setTimeout(searchCompetitions, SEARCH_DEBOUNCE_DELAY);
-  });
-
-  searchForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    clearTimeout(searchDebounceTimer);
-    searchCompetitions();
-  });
-
-  async function addCompetition(event) {
-    event.preventDefault();
-    const submitBtn = competitionForm.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-
-    try {
-      const response = await fetch(CREATE_COMPETITION_ENDPOINT, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': getCookie('csrftoken') },
-        body: new FormData(competitionForm),
-      });
-
-      const data = await response.json().catch(() => ({}));
-
-      if (response.status === 201) {
-        competitionForm.reset();
-        closeCompetitionModal();
-        if (typeof showToast === 'function') showToast("Competition added successfully!", false);
-        fetchCompetitions(searchInput.value.trim());
-      } else {
-        const errorMsg = data.message || 'Validation error saving competition.';
-        if (typeof showToast === 'function') showToast(errorMsg, true);
-      }
-    } catch (err) {
-      if (typeof showToast === 'function') showToast("Network error while saving.", true);
-    } finally {
-      submitBtn.disabled = false;
-    }
+  async function writeItem(url, method, payload) {
+    const response = await fetch(url, {
+      method,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: payload === undefined ? undefined : JSON.stringify(payload),
+    });
+    if (response.status === 204) return null;
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || `HTTP ${response.status}`);
+    return data;
   }
 
   if (competitionForm) {
-    competitionForm.addEventListener('submit', addCompetition);
+    competitionForm.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const button = competitionForm.querySelector('button[type="submit"]');
+      button.disabled = true;
+      try {
+        const id = document.getElementById('form-edit-id').value;
+        const method = id ? 'PATCH' : 'POST';
+        const url = id ? formatEndpoint(DETAIL_COMPETITION_ENDPOINT, id) : BASE_COMPETITIONS_ENDPOINT;
+
+        const formData = new FormData(competitionForm);
+        const payload = Object.fromEntries(formData.entries());
+        delete payload.id;
+
+        await writeItem(url, method, payload);
+        closeCompetitionModal();
+        if (typeof showToast === 'function') showToast('Success', id ? 'Updated successfully.' : 'Created successfully.', 'success');
+        await fetchItems(searchInput.value.trim());
+      } catch (error) {
+        if (typeof showToast === 'function') showToast('Error', error.message, 'error');
+      } finally {
+        button.disabled = false;
+      }
+    });
   }
 
-  fetchCompetitions(searchInput.value.trim());
+  gridContainer.addEventListener('click', async function (event) {
+    const button = event.target.closest('button[data-action]');
+    if (!button || button.disabled) return;
+    const action = button.dataset.action;
+
+    if (action === 'delete' && !window.confirm('Delete this entry?')) return;
+    button.disabled = true;
+    try {
+      const pattern = action === 'star' ? STAR_COMPETITION_ENDPOINT : DETAIL_COMPETITION_ENDPOINT;
+      await writeItem(formatEndpoint(pattern, button.dataset.id), action === 'star' ? 'POST' : 'DELETE');
+      if (typeof showToast === 'function') showToast('Success', action === 'star' ? 'Star updated.' : 'Deleted successfully.', 'success');
+      await fetchItems(searchInput.value.trim());
+    } catch (error) {
+      if (typeof showToast === 'function') showToast('Error', error.message, 'error');
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  searchInput.addEventListener('input', function () {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => fetchItems(searchInput.value.trim()), 300);
+  });
+  searchForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    clearTimeout(searchDebounceTimer);
+    fetchItems(searchInput.value.trim());
+  });
+
+  fetchItems(searchInput.value.trim());
 </script>
 {% endblock %}

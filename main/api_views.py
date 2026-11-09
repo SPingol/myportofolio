@@ -6,14 +6,19 @@ from rest_framework.decorators import (
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.db.models import Q
 
-from main.models import Project, Experience
+from main.models import Project, Experience, Education, Competition
 from main.permissions import (
     IsPortfolioOwnerOrReadOnly,
     IsPortfolioOwnerOrEditorOrReadOnly,
 )
-from main.serializers import ProjectSerializer, ExperienceSerializer
+from main.serializers import (
+    ProjectSerializer, ExperienceSerializer, 
+    EducationSerializer, CompetitionSerializer
+)
 
+# --- PROJECTS ---
 
 @api_view(["GET", "HEAD", "POST"])
 @authentication_classes([SessionAuthentication])
@@ -71,17 +76,23 @@ def project_star(request, project_id):
     serializer = ProjectSerializer(project, context={"request": request})
     return Response(serializer.data)
 
+# --- EXPERIENCE ---
 
 @api_view(["GET", "HEAD", "POST"])
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
 def experience_list(request):
     if request.method in ("GET", "HEAD"):
-        experiences = Experience.objects.all()
+        experiences = Experience.objects.prefetch_related("starred_by").all()
+        query = request.query_params.get("q", request.query_params.get("title", "")).strip()
+        if query:
+            experiences = experiences.filter(Q(title__icontains=query) | Q(role__icontains=query))
         serializer = ExperienceSerializer(experiences, many=True, context={"request": request})
         return Response(serializer.data)
 
-    # Note: IsPortfolioOwnerOrEditorOrReadOnly permits POST only for superusers
+    if not request.user.is_superuser:
+        return Response({"detail": "Only superuser can create data."}, status=status.HTTP_403_FORBIDDEN)
+        
     serializer = ExperienceSerializer(data=request.data, context={"request": request})
     serializer.is_valid(raise_exception=True)
     serializer.save()
@@ -92,27 +103,148 @@ def experience_list(request):
 @authentication_classes([SessionAuthentication])
 @permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
 def experience_detail(request, pk):
-    experience = get_object_or_404(Experience, pk=pk)
+    experience = get_object_or_404(Experience.objects.prefetch_related("starred_by"), pk=pk)
     
     if request.method in ("GET", "HEAD"):
         serializer = ExperienceSerializer(experience, context={"request": request})
         return Response(serializer.data)
 
     if request.method == "DELETE":
-        # Delete action restricted to superuser (owner) only
         if not request.user.is_superuser:
-            return Response(
-                {"detail": "Only the portfolio owner can delete entries."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
+            return Response({"detail": "Only the portfolio owner can delete entries."}, status=status.HTTP_403_FORBIDDEN)
         experience.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    # Handles PUT/PATCH: Editors and Owner can update
     serializer = ExperienceSerializer(
         experience, data=request.data, partial=request.method == "PATCH",
         context={"request": request},
     )
     serializer.is_valid(raise_exception=True)
     serializer.save()
+    return Response(serializer.data)
+
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def experience_star(request, pk):
+    experience = get_object_or_404(Experience, pk=pk)
+    if experience.starred_by.filter(pk=request.user.pk).exists():
+        experience.starred_by.remove(request.user)
+    else:
+        experience.starred_by.add(request.user)
+    serializer = ExperienceSerializer(experience, context={"request": request})
+    return Response(serializer.data)
+
+# --- EDUCATION ---
+
+@api_view(["GET", "HEAD", "POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
+def education_list(request):
+    if request.method in ("GET", "HEAD"):
+        educations = Education.objects.prefetch_related("starred_by").all()
+        query = request.query_params.get("q", request.query_params.get("title", "")).strip()
+        if query:
+            educations = educations.filter(Q(degree__icontains=query) | Q(institution__icontains=query))
+        serializer = EducationSerializer(educations, many=True, context={"request": request})
+        return Response(serializer.data)
+
+    if not request.user.is_superuser:
+        return Response({"detail": "Only superuser can create data."}, status=status.HTTP_403_FORBIDDEN)
+        
+    serializer = EducationSerializer(data=request.data, context={"request": request})
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+@api_view(["GET", "HEAD", "PUT", "PATCH", "DELETE"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
+def education_detail(request, pk):
+    education = get_object_or_404(Education.objects.prefetch_related("starred_by"), pk=pk)
+    
+    if request.method in ("GET", "HEAD"):
+        serializer = EducationSerializer(education, context={"request": request})
+        return Response(serializer.data)
+
+    if request.method == "DELETE":
+        if not request.user.is_superuser:
+            return Response({"detail": "Only the portfolio owner can delete entries."}, status=status.HTTP_403_FORBIDDEN)
+        education.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = EducationSerializer(
+        education, data=request.data, partial=request.method == "PATCH", context={"request": request},
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data)
+
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def education_star(request, pk):
+    education = get_object_or_404(Education, pk=pk)
+    if education.starred_by.filter(pk=request.user.pk).exists():
+        education.starred_by.remove(request.user)
+    else:
+        education.starred_by.add(request.user)
+    serializer = EducationSerializer(education, context={"request": request})
+    return Response(serializer.data)
+
+# --- COMPETITION ---
+
+@api_view(["GET", "HEAD", "POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
+def competition_list(request):
+    if request.method in ("GET", "HEAD"):
+        competitions = Competition.objects.prefetch_related("starred_by").all()
+        query = request.query_params.get("q", request.query_params.get("title", "")).strip()
+        if query:
+            competitions = competitions.filter(Q(title__icontains=query) | Q(organizer__icontains=query))
+        serializer = CompetitionSerializer(competitions, many=True, context={"request": request})
+        return Response(serializer.data)
+        
+    if not request.user.is_superuser:
+        return Response({"detail": "Only superuser can create data."}, status=status.HTTP_403_FORBIDDEN)
+
+    serializer = CompetitionSerializer(data=request.data, context={"request": request})
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+@api_view(["GET", "HEAD", "PUT", "PATCH", "DELETE"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
+def competition_detail(request, pk):
+    competition = get_object_or_404(Competition.objects.prefetch_related("starred_by"), pk=pk)
+    
+    if request.method in ("GET", "HEAD"):
+        serializer = CompetitionSerializer(competition, context={"request": request})
+        return Response(serializer.data)
+
+    if request.method == "DELETE":
+        if not request.user.is_superuser:
+            return Response({"detail": "Only the portfolio owner can delete entries."}, status=status.HTTP_403_FORBIDDEN)
+        competition.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    serializer = CompetitionSerializer(
+        competition, data=request.data, partial=request.method == "PATCH", context={"request": request},
+    )
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(serializer.data)
+
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication])
+@permission_classes([IsAuthenticated])
+def competition_star(request, pk):
+    competition = get_object_or_404(Competition, pk=pk)
+    if competition.starred_by.filter(pk=request.user.pk).exists():
+        competition.starred_by.remove(request.user)
+    else:
+        competition.starred_by.add(request.user)
+    serializer = CompetitionSerializer(competition, context={"request": request})
     return Response(serializer.data)

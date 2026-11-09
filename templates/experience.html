@@ -7,9 +7,9 @@
     <div class="project-header">
       <h1 class="section-title" style="margin-bottom: 0;">Experience</h1>
       {% if user.is_superuser %}
-      <button type="button" class="button project-add-button" popovertarget="add-experience-modal">
-        <span aria-hidden="true">+</span>
-        Add Experience
+      <button type="button" class="button project-add-button" popovertarget="add-experience-modal"
+        onclick="resetExperienceModal()">
+        <span aria-hidden="true">+</span> Add Experience
       </button>
       {% endif %}
     </div>
@@ -17,86 +17,102 @@
     <!-- Search Form -->
     <form id="experience-search-form" class="project-search">
       <input type="search" id="search-input" name="q" placeholder="Search by title or role"
-        class="project-search__input" aria-label="Search by experience title" />
+        class="project-search__input" />
       <button type="submit" class="button">Search</button>
     </form>
 
-    <!-- Dynamic Container -->
+    <div id="loading" class="hide">
+      <p>Loading...</p>
+    </div>
+    <div id="error" class="hide">
+      <p class="form-error">An error occurred while loading.</p>
+    </div>
+    <div id="empty" class="hide">
+      <p class="empty-state">No experience entries found.</p>
+    </div>
     <div id="grid" class="card-grid"></div>
 
   </div>
 </section>
 
-<!-- Modal for Adding Experience -->
-{% if user.is_superuser %}
+<!-- Unified Modal for Adding/Editing Experience -->
+{% if user.is_superuser or 'Editor' in user.groups.all|stringformat:"s" %}
 <div id="add-experience-modal" popover class="modal-backdrop">
   <div class="modal-content">
     <div class="modal-header">
-      <h3>Add New Experience</h3>
+      <h3 id="modal-title-display">Add/Edit Experience</h3>
       <button type="button" onclick="closeExperienceModal()" class="modal-close-btn">&times;</button>
     </div>
     <form id="experience-form">
+      <input type="hidden" name="id" id="form-edit-id" value="">
       {% csrf_token %}
       <div class="form-group">
         <label>Title *</label>
-        <input type="text" name="title" required class="project-search__input" />
+        <input type="text" name="title" id="form-title" required class="project-search__input" />
       </div>
       <div class="form-group">
         <label>Role</label>
-        <input type="text" name="role" class="project-search__input" />
+        <input type="text" name="role" id="form-role" class="project-search__input" />
       </div>
       <div class="form-group">
         <label>Category</label>
-        <input type="text" name="category" class="project-search__input" />
+        <input type="text" name="category" id="form-category" class="project-search__input" />
       </div>
       <div class="form-group">
         <label>Description</label>
-        <textarea name="description" rows="3" class="project-search__input"></textarea>
+        <textarea name="description" id="form-description" rows="3" class="project-search__input"></textarea>
       </div>
       <div class="modal-footer">
         <button type="button" onclick="closeExperienceModal()" class="button button-secondary">Cancel</button>
-        <button type="submit" class="button">Save Experience</button>
+        <button type="submit" class="button">Save</button>
       </div>
     </form>
   </div>
 </div>
 {% endif %}
 
+{% csrf_token %}
 <script>
-  const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
-  const BASE_EXPERIENCE_ENDPOINT = "/api/experience/";
-  const CREATE_EXPERIENCE_ENDPOINT = "/experience/add-ajax/";
+  const BASE_EXPERIENCE_ENDPOINT = "{% url 'api:experience-list' %}";
+  const DETAIL_EXPERIENCE_ENDPOINT = "{% url 'api:experience-detail' '00000000-0000-0000-0000-000000000000' %}";
+  const STAR_EXPERIENCE_ENDPOINT = "{% url 'api:experience-star' '00000000-0000-0000-0000-000000000000' %}";
 
-  const searchInput = document.getElementById('search-input');
-  const searchForm = document.getElementById('experience-search-form');
+  const IS_SUPERUSER = "{{ user.is_superuser|yesno:'true,false' }}" === "true";
+  const IS_AUTHENTICATED = "{{ user.is_authenticated|yesno:'true,false' }}" === "true";
+  const IS_EDITOR = "{% if 'Editor' in user.groups.all|stringformat:'s' %}true{% else %}false{% endif %}" === "true";
+  const CAN_EDIT = IS_SUPERUSER || IS_EDITOR;
+
+  const loadingState = document.getElementById('loading');
+  const errorState = document.getElementById('error');
+  const emptyState = document.getElementById('empty');
   const gridContainer = document.getElementById('grid');
+  const searchForm = document.getElementById('experience-search-form');
+  const searchInput = document.getElementById('search-input');
   const experienceForm = document.getElementById('experience-form');
 
-  const SEARCH_DEBOUNCE_DELAY = 300;
+  let abortController;
   let searchDebounceTimer;
-
-  function escapeHtml(value) {
-    return String(value ?? '')
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#39;');
-  }
+  let cachedData = {};
 
   function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-      const cookies = document.cookie.split(';');
-      for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.substring(0, name.length + 1) === (name + '=')) {
-          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-          break;
-        }
-      }
-    }
-    return cookieValue;
+    const prefix = `${name}=`;
+    const cookie = document.cookie.split(';').map(v => v.trim()).find(v => v.startsWith(prefix));
+    return cookie ? decodeURIComponent(cookie.slice(prefix.length)) : null;
+  }
+
+  function escapeHtml(value) {
+    return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;');
+  }
+
+  function formatEndpoint(pattern, id) {
+    return pattern.replace('00000000-0000-0000-0000-000000000000', id);
+  }
+
+  function displayState({ showLoading = false, showError = false, showEmpty = false, showGrid = false }) {
+    loadingState.classList.toggle('hide', !showLoading);
+    errorState.classList.toggle('hide', !showError);
+    emptyState.classList.toggle('hide', !showEmpty);
+    gridContainer.classList.toggle('hide', !showGrid);
   }
 
   function closeExperienceModal() {
@@ -104,124 +120,159 @@
     if (modal) modal.hidePopover();
   }
 
+  function resetExperienceModal() {
+    if (experienceForm) {
+      experienceForm.reset();
+      document.getElementById('form-edit-id').value = "";
+      document.getElementById('modal-title-display').innerText = "Add Experience";
+    }
+  }
+
+  window.openEditModal = function (id) {
+    const item = cachedData[id];
+    if (!item || !experienceForm) return;
+    document.getElementById('form-edit-id').value = item.id;
+    document.getElementById('form-title').value = item.title;
+    document.getElementById('form-role').value = item.role || "";
+    document.getElementById('form-category').value = item.category || "";
+    document.getElementById('form-description').value = item.description || "";
+    document.getElementById('modal-title-display').innerText = "Edit Experience";
+    document.getElementById('add-experience-modal').showPopover();
+  };
+
   function buildExperienceCardElement(item) {
-    const fields = item.fields;
-    const pk = item.pk;
-    const articleElement = document.createElement('article');
-    articleElement.className = 'card';
+    cachedData[item.id] = item;
+    const article = document.createElement('article');
+    article.className = 'card';
 
-    const title = escapeHtml(fields.title);
-    const role = escapeHtml(fields.role);
-    const category = escapeHtml(fields.category);
-    const description = escapeHtml(fields.description || '').replace(/\n/g, '<br>');
-    const skillsList = fields.skills_list || [];
+    const starBtn = IS_AUTHENTICATED
+      ? `<button type="button" class="button button-small" data-action="star" data-id="${item.id}">
+          <span style="color: ${item.is_starred ? '#f59e0b' : '#9ca3af'};">★</span> ${item.star_count}
+         </button>`
+      : `<a href="{% url 'main:login' %}" class="button button-small">★ ${item.star_count}</a>`;
 
-    const deleteHtml = IS_SUPERUSER
-      ? `<form action="/experience/${pk}/delete/" method="POST" style="display:inline;" onsubmit="return confirm('Delete this experience?')">
-          <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-          <button type="submit" class="button button-danger">Delete</button>
-        </form>`
-      : '';
+    const editBtn = CAN_EDIT
+      ? `<button type="button" class="button button-secondary button-small" onclick="openEditModal('${item.id}')">Edit</button>` : '';
 
-    articleElement.innerHTML = `
+    const deleteBtn = IS_SUPERUSER
+      ? `<button type="button" class="button button-danger button-small" data-action="delete" data-id="${item.id}">Delete</button>` : '';
+
+    article.innerHTML = `
       <div class="card-header">
         <div>
-          <h2>${title}</h2>
-          ${role ? `<p class="card-subtitle">${role}</p>` : ''}
+          <h2>${escapeHtml(item.title)}</h2>
+          ${item.role ? `<p class="card-subtitle">${escapeHtml(item.role)}</p>` : ''}
         </div>
       </div>
       <div class="card-body">
-        <p>${description}</p>
+        <p>${escapeHtml(item.description).replace(/\n/g, '<br>')}</p>
       </div>
       <div class="card-footer">
         <div class="card-tags">
-          ${category ? `<span class="tech-tag">${category}</span>` : ''}
-          ${skillsList.map(skill => `<span class="tech-tag">${escapeHtml(skill)}</span>`).join('')}
+          ${item.category ? `<span class="tech-tag">${escapeHtml(item.category)}</span>` : ''}
+          ${(item.skills_list || []).map(skill => `<span class="tech-tag">${escapeHtml(skill)}</span>`).join('')}
         </div>
         <div class="card-actions">
-          <form action="/experience/${pk}/star/" method="POST" style="display:inline;">
-            <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie('csrftoken')}">
-            <button type="submit" class="button button-small">
-              <span style="color: ${fields.is_starred ? '#f59e0b' : '#9ca3af'};">★</span> ${fields.star_count || 0}
-            </button>
-          </form>
-          ${deleteHtml}
+          ${starBtn}
+          ${editBtn}
+          ${deleteBtn}
         </div>
       </div>
     `;
-    return articleElement;
+    return article;
   }
 
-  async function fetchExperience(searchQuery = '') {
-    gridContainer.innerHTML = `<p class="empty-state">Loading experience entries...</p>`;
-
+  async function fetchItems(searchQuery = '') {
+    if (abortController) abortController.abort();
+    abortController = new AbortController();
     try {
-      const url = searchQuery ? `${BASE_EXPERIENCE_ENDPOINT}?q=${encodeURIComponent(searchQuery)}` : BASE_EXPERIENCE_ENDPOINT;
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`HTTP Error ${response.status}`);
+      displayState({ showLoading: true });
+      const url = new URL(BASE_EXPERIENCE_ENDPOINT, window.location.origin);
+      if (searchQuery) url.searchParams.set('q', searchQuery);
+
+      const response = await fetch(url, { headers: { Accept: 'application/json' }, signal: abortController.signal });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
       const data = await response.json();
-
-      if (!data || data.length === 0) {
-        gridContainer.innerHTML = `<p class="empty-state">No experience entries found.</p>`;
-        return;
-      }
-
-      gridContainer.innerHTML = '';
-      data.forEach(item => gridContainer.appendChild(buildExperienceCardElement(item)));
+      gridContainer.replaceChildren(...data.map(buildExperienceCardElement));
+      displayState({ showGrid: data.length > 0, showEmpty: data.length === 0 });
     } catch (error) {
-      gridContainer.innerHTML = `<p class="form-error">Failed to load experience entries.</p>`;
+      if (error.name === 'AbortError') return;
+      displayState({ showError: true });
     }
   }
 
-  function searchExperience() {
-    fetchExperience(searchInput.value.trim());
-  }
-
-  searchInput.addEventListener('input', () => {
-    clearTimeout(searchDebounceTimer);
-    searchDebounceTimer = setTimeout(searchExperience, SEARCH_DEBOUNCE_DELAY);
-  });
-
-  searchForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    clearTimeout(searchDebounceTimer);
-    searchExperience();
-  });
-
-  async function addExperience(event) {
-    event.preventDefault();
-    const submitBtn = experienceForm.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
-
-    try {
-      const response = await fetch(CREATE_EXPERIENCE_ENDPOINT, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': getCookie('csrftoken') },
-        body: new FormData(experienceForm),
-      });
-
-      const data = await response.json().catch(() => ({}));
-
-      if (response.status === 201) {
-        experienceForm.reset();
-        closeExperienceModal();
-        if (typeof showToast === 'function') showToast("Experience added successfully!", false);
-        fetchExperience(searchInput.value.trim());
-      } else {
-        const errorMsg = data.message || 'Validation error saving experience.';
-        if (typeof showToast === 'function') showToast(errorMsg, true);
-      }
-    } catch (err) {
-      if (typeof showToast === 'function') showToast("Network error while saving.", true);
-    } finally {
-      submitBtn.disabled = false;
-    }
+  async function writeItem(url, method, payload) {
+    const response = await fetch(url, {
+      method,
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: payload === undefined ? undefined : JSON.stringify(payload),
+    });
+    if (response.status === 204) return null;
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(data.detail || `HTTP ${response.status}`);
+    return data;
   }
 
   if (experienceForm) {
-    experienceForm.addEventListener('submit', addExperience);
+    experienceForm.addEventListener('submit', async function (event) {
+      event.preventDefault();
+      const button = experienceForm.querySelector('button[type="submit"]');
+      button.disabled = true;
+      try {
+        const id = document.getElementById('form-edit-id').value;
+        const method = id ? 'PATCH' : 'POST';
+        const url = id ? formatEndpoint(DETAIL_EXPERIENCE_ENDPOINT, id) : BASE_EXPERIENCE_ENDPOINT;
+
+        const formData = new FormData(experienceForm);
+        const payload = Object.fromEntries(formData.entries());
+        delete payload.id; // exclude local tracking hidden field
+
+        await writeItem(url, method, payload);
+        closeExperienceModal();
+        if (typeof showToast === 'function') showToast('Success', id ? 'Updated successfully.' : 'Created successfully.', 'success');
+        await fetchItems(searchInput.value.trim());
+      } catch (error) {
+        if (typeof showToast === 'function') showToast('Error', error.message, 'error');
+      } finally {
+        button.disabled = false;
+      }
+    });
   }
 
-  fetchExperience(searchInput.value.trim());
+  gridContainer.addEventListener('click', async function (event) {
+    const button = event.target.closest('button[data-action]');
+    if (!button || button.disabled) return;
+    const action = button.dataset.action;
+
+    if (action === 'delete' && !window.confirm('Delete this entry?')) return;
+    button.disabled = true;
+    try {
+      const pattern = action === 'star' ? STAR_EXPERIENCE_ENDPOINT : DETAIL_EXPERIENCE_ENDPOINT;
+      await writeItem(formatEndpoint(pattern, button.dataset.id), action === 'star' ? 'POST' : 'DELETE');
+      if (typeof showToast === 'function') showToast('Success', action === 'star' ? 'Star updated.' : 'Deleted successfully.', 'success');
+      await fetchItems(searchInput.value.trim());
+    } catch (error) {
+      if (typeof showToast === 'function') showToast('Error', error.message, 'error');
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  searchInput.addEventListener('input', function () {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => fetchItems(searchInput.value.trim()), 300);
+  });
+  searchForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    clearTimeout(searchDebounceTimer);
+    fetchItems(searchInput.value.trim());
+  });
+
+  fetchItems(searchInput.value.trim());
 </script>
 {% endblock %}
