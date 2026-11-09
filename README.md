@@ -4,6 +4,12 @@ NPM : 2506637136
 
 Class : PBP KKI
 
+## IMPORTANT NOTES READ BEFORE PROCEEDING
+- Locked certain features behind editor role, which is configured using DJANGO panel 
+- USER: Editor1
+- PASS: testediting1970
+- DELETE works but is locked behind superuser(me)
+
 ## UPDATE LOGS
 
 05/09/26
@@ -120,11 +126,19 @@ XSS is where an attacker injects malicious code into the web application data, t
 
 1. Explain what REST means and why returning JSON alone isn’t enough to call an API RESTful. Also explain the difference between PUT and PATCH, with an example of when each should be used.
 
+REST(Representational State Transfer) is an architectural method used for designing web APIs that treat data as resources accessed via standard URLs, rather than being a specific data format. Returning JSON alone isn’t enough to call an API RESTful because the API must also be stateless and use HTTP methods semantically to define action, such as GET and POST to read and create respectively. Within this system, PUT and PATCH serve different update purposes. PUT is used to replace an entire resource, requiring the client to send all required fields in a payload, e.g a complete user profile object. Whereas, PATCH is used for partial updates, allowing the client to send only the specific fields which need to be changed.
+
 2. Explain the role of a serializer in Django REST Framework. What are its advantages over manually assembling a dictionary with JsonResponse as in Tutorial 05?
+
+A serializer translates complex data types, such as Django model instances, into native python data types that can be rendedered into JSON without as much hassle. It also handles deserialization and input validation. This eliminates the boilerplate code of writing manual loops to extract object keys and fields, which is done when manually assembling dicitionaries, and it centralizes data validation, such that constraints are handled automatically, generating error messages and dictionaries without manual conditional checks in the view. Furthermore, serializers can can seamlessly inject computed, read-only data, such as a project's star count, directly into the response payload without cluttering the core view logic.
 
 3. Explain the difference between authentication and authorization in Django REST Framework. Why must access rights be checked with a permission class on the server, rather than only by hiding a button in the template?
 
+Authenticatiton is the process of establishing the identity of the user, verifying the credentials, such as session cookies, to verify who is making the request. Whereas, Authorization deteremines the permissions of a user, identifying if the user has the right to perform a specific action, such as checking if the user is an editor before being allowed to edit. These access rights must be strictly enforced with permission class being on the server rather than simply hiding the buttons in the HTML. Hiding a button only prevents casual users from clicking it, whereas a more informed and malicious user can quite easily bypass the frontend UI and send a direct request to the API using browser dev tools or applications like Postman, which only server-side checks can successfully prevent.
+
 4. Explain why requests that change data still need a CSRF token when an API uses SessionAuthentication. Why isn’t a test using force_authenticate enough to prove that CSRF protection works?
+
+Browsers automatically attach session cookies to any request sent to the domain, a malicious website could trick a user's browser into submitting a forged state-changing request, which the server would accept blindly, if it only checked the cookie. Requiring a CSRF token, ensures that the request originated from the trusted frontend. When testing this security measure, using DRF's force_authenticate is insufficient because it directly assigns a user to the request object, bypassing Django's Authentication middleware, cookie evaluation and CSRF verification entirely. To prove the CSRF works definitively, tests must establish a real session using .login() and instantiate the test client with CSRF checks strictly enforced, to accurately simulate a browser's security environment.
 
 
 
