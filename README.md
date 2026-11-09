@@ -50,6 +50,9 @@ Class : PBP KKI
 30/09/26 & 05/10/26
 - Tutorial 4 & 5 changes (Placeholder)
 
+04/11/26 & 09/11/26
+- Tutorial 6 changes (Placeholder)
+
 ## REFLECTION QUESTIONS
 
 ### Assignment 1
@@ -112,6 +115,22 @@ fetch()  an asynchornous function that returns a Promise that resolves to a Resp
 3. Explain what a Cross-Site Scripting (XSS) attack is and why data displayed through AJAX/JavaScript is more vulnerable to this attack than data displayed directly through a Django template.
 
 XSS is where an attacker injects malicious code into the web application data, typically via JavaScript. When a user views the data, their browser executes the injected malicious code, opening up a variety of security vulnerabilities, such as exposing session cookies or auth tokens. AJAX/JavaScript is especially vulnerable this type of attack since it does not automatically clean data, meaning that if the malicious code gets past the AJAX response the browser will immediately run it without question. Whereas, Django template does automatically cleans and check data being entered.
+
+### Assignment 6
+
+1. Explain what REST means and why returning JSON alone isn’t enough to call an API RESTful. Also explain the difference between PUT and PATCH, with an example of when each should be used.
+
+2. Explain the role of a serializer in Django REST Framework. What are its advantages over manually assembling a dictionary with JsonResponse as in Tutorial 05?
+
+3. Explain the difference between authentication and authorization in Django REST Framework. Why must access rights be checked with a permission class on the server, rather than only by hiding a button in the template?
+
+4. Explain why requests that change data still need a CSRF token when an API uses SessionAuthentication. Why isn’t a test using force_authenticate enough to prove that CSRF protection works?
+
+
+
+
+
+
 ## AI DISCLOSURE
 
 ### Assignment 1
@@ -133,5 +152,5 @@ Ultimately, AI is a useful supportive tool to help with the learning process esp
 ### Assignment 3
 For this assignment, AI was utilized much in the same way as assignment 1 & 2, though it is to be noted at this stage it is only useful and safe to use for small chunks and consultation as at this size and complexity it starts becoming confused and requires heavy manual changes to properly integrate the suggestions or solutions provided. 
 
-### Assignment 4 & 5
+### Assignment 4 & 5 & 6
 Same usage as prior assignments, though it is to be noted that as the complexity of the project increases the more "hallucinations" or garbage outputs begin to appear and needs careful examination before implementing
