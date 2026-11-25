@@ -1,27 +1,44 @@
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.authentication import SessionAuthentication, TokenAuthentication
 from rest_framework.decorators import (
-    api_view, authentication_classes, permission_classes,
+    api_view,
+    authentication_classes,
+    permission_classes,
 )
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from django.db.models import Q
 
-from main.models import Project, Experience, Education, Competition
+from main.models import Competition, Education, Experience, Project
 from main.permissions import (
-    IsPortfolioOwnerOrReadOnly,
     IsPortfolioOwnerOrEditorOrReadOnly,
+    IsPortfolioOwnerOrReadOnly,
 )
 from main.serializers import (
-    ProjectSerializer, ExperienceSerializer, 
-    EducationSerializer, CompetitionSerializer
+    CompetitionSerializer,
+    EducationSerializer,
+    ExperienceSerializer,
+    ProjectSerializer,
 )
+
+# --- AUTHENTICATION ---
+
+
+@api_view(["POST"])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def api_logout(request):
+    if request.auth is not None:
+        request.auth.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 # --- PROJECTS ---
 
+
 @api_view(["GET", "HEAD", "POST"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsPortfolioOwnerOrReadOnly])
 def project_list(request):
     if request.method in ("GET", "HEAD"):
@@ -30,7 +47,9 @@ def project_list(request):
         if title:
             projects = projects.filter(title__icontains=title)
         serializer = ProjectSerializer(
-            projects, many=True, context={"request": request},
+            projects,
+            many=True,
+            context={"request": request},
         )
         return Response(serializer.data)
 
@@ -41,11 +60,12 @@ def project_list(request):
 
 
 @api_view(["GET", "HEAD", "PUT", "PATCH", "DELETE"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsPortfolioOwnerOrReadOnly])
 def project_detail(request, project_id):
     project = get_object_or_404(
-        Project.objects.prefetch_related("starred_by"), pk=project_id,
+        Project.objects.prefetch_related("starred_by"),
+        pk=project_id,
     )
     if request.method in ("GET", "HEAD"):
         serializer = ProjectSerializer(project, context={"request": request})
@@ -56,7 +76,9 @@ def project_detail(request, project_id):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     serializer = ProjectSerializer(
-        project, data=request.data, partial=request.method == "PATCH",
+        project,
+        data=request.data,
+        partial=request.method == "PATCH",
         context={"request": request},
     )
     serializer.is_valid(raise_exception=True)
@@ -65,7 +87,7 @@ def project_detail(request, project_id):
 
 
 @api_view(["POST"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def project_star(request, project_id):
     project = get_object_or_404(Project, pk=project_id)
@@ -76,10 +98,12 @@ def project_star(request, project_id):
     serializer = ProjectSerializer(project, context={"request": request})
     return Response(serializer.data)
 
+
 # --- EXPERIENCE ---
 
+
 @api_view(["GET", "HEAD", "POST"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
 def experience_list(request):
     if request.method in ("GET", "HEAD"):
@@ -92,7 +116,7 @@ def experience_list(request):
 
     if not request.user.is_superuser:
         return Response({"detail": "Only superuser can create data."}, status=status.HTTP_403_FORBIDDEN)
-        
+
     serializer = ExperienceSerializer(data=request.data, context={"request": request})
     serializer.is_valid(raise_exception=True)
     serializer.save()
@@ -100,11 +124,11 @@ def experience_list(request):
 
 
 @api_view(["GET", "HEAD", "PUT", "PATCH", "DELETE"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
 def experience_detail(request, pk):
     experience = get_object_or_404(Experience.objects.prefetch_related("starred_by"), pk=pk)
-    
+
     if request.method in ("GET", "HEAD"):
         serializer = ExperienceSerializer(experience, context={"request": request})
         return Response(serializer.data)
@@ -116,15 +140,18 @@ def experience_detail(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     serializer = ExperienceSerializer(
-        experience, data=request.data, partial=request.method == "PATCH",
+        experience,
+        data=request.data,
+        partial=request.method == "PATCH",
         context={"request": request},
     )
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data)
 
+
 @api_view(["POST"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def experience_star(request, pk):
     experience = get_object_or_404(Experience, pk=pk)
@@ -135,10 +162,12 @@ def experience_star(request, pk):
     serializer = ExperienceSerializer(experience, context={"request": request})
     return Response(serializer.data)
 
+
 # --- EDUCATION ---
 
+
 @api_view(["GET", "HEAD", "POST"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
 def education_list(request):
     if request.method in ("GET", "HEAD"):
@@ -151,18 +180,19 @@ def education_list(request):
 
     if not request.user.is_superuser:
         return Response({"detail": "Only superuser can create data."}, status=status.HTTP_403_FORBIDDEN)
-        
+
     serializer = EducationSerializer(data=request.data, context={"request": request})
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
 @api_view(["GET", "HEAD", "PUT", "PATCH", "DELETE"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
 def education_detail(request, pk):
     education = get_object_or_404(Education.objects.prefetch_related("starred_by"), pk=pk)
-    
+
     if request.method in ("GET", "HEAD"):
         serializer = EducationSerializer(education, context={"request": request})
         return Response(serializer.data)
@@ -174,14 +204,18 @@ def education_detail(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     serializer = EducationSerializer(
-        education, data=request.data, partial=request.method == "PATCH", context={"request": request},
+        education,
+        data=request.data,
+        partial=request.method == "PATCH",
+        context={"request": request},
     )
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data)
 
+
 @api_view(["POST"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def education_star(request, pk):
     education = get_object_or_404(Education, pk=pk)
@@ -192,10 +226,12 @@ def education_star(request, pk):
     serializer = EducationSerializer(education, context={"request": request})
     return Response(serializer.data)
 
+
 # --- COMPETITION ---
 
+
 @api_view(["GET", "HEAD", "POST"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
 def competition_list(request):
     if request.method in ("GET", "HEAD"):
@@ -205,7 +241,7 @@ def competition_list(request):
             competitions = competitions.filter(Q(title__icontains=query) | Q(organizer__icontains=query))
         serializer = CompetitionSerializer(competitions, many=True, context={"request": request})
         return Response(serializer.data)
-        
+
     if not request.user.is_superuser:
         return Response({"detail": "Only superuser can create data."}, status=status.HTTP_403_FORBIDDEN)
 
@@ -214,12 +250,13 @@ def competition_list(request):
     serializer.save()
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
 @api_view(["GET", "HEAD", "PUT", "PATCH", "DELETE"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsPortfolioOwnerOrEditorOrReadOnly])
 def competition_detail(request, pk):
     competition = get_object_or_404(Competition.objects.prefetch_related("starred_by"), pk=pk)
-    
+
     if request.method in ("GET", "HEAD"):
         serializer = CompetitionSerializer(competition, context={"request": request})
         return Response(serializer.data)
@@ -231,14 +268,18 @@ def competition_detail(request, pk):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     serializer = CompetitionSerializer(
-        competition, data=request.data, partial=request.method == "PATCH", context={"request": request},
+        competition,
+        data=request.data,
+        partial=request.method == "PATCH",
+        context={"request": request},
     )
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data)
 
+
 @api_view(["POST"])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, TokenAuthentication])
 @permission_classes([IsAuthenticated])
 def competition_star(request, pk):
     competition = get_object_or_404(Competition, pk=pk)
